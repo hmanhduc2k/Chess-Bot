@@ -1,0 +1,27 @@
+Rook at (a,0), White
+Knight at (b,0), White
+Bishop at (c,0), White
+Queen at (d,0), White
+King at (e,0), White
+Pawn at (a,1), White
+Pawn at (b,1), White
+Pawn at (c,1), White
+Pawn at (d,1), White
+Pawn at (e,1), White
+Pawn at (a,3), Black
+Pawn at (b,3), Black
+Pawn at (c,3), Black
+Pawn at (d,3), Black
+Pawn at (e,3), Black
+Rook at (a,4), Black
+Knight at (b,4), Black
+Bishop at (c,4), Black
+Queen at (d,4), Black
+King at (e,4), Black
+00|R|M|B|Q|K|
+01|P|P|P|P|P|
+02| | | | | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
+
