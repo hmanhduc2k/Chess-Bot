@@ -38,6 +38,42 @@ def isPiece(piece):
         return True
     except Exception as err:
         return False
+
+
+import sys
+
+### IMPORTANT: Remove any print() functions or rename any print functions/variables/string when submitting on CodePost
+### The autograder will not run if it detects any print function.
+
+# Helper functions to aid in your implementation. Can edit/remove
+class Piece:
+    pass
+
+class Knight(Piece):
+    pass
+        
+class Rook(Piece):
+    pass
+
+class Bishop(Piece):
+    pass
+        
+class Queen(Piece):
+    pass
+        
+class King(Piece):
+    pass
+        
+class Pawn(Piece):
+    #New Piece to be implemented
+    pass
+
+class Game:
+    pass
+
+class State:
+    pass
+
     
 # Type of chess piece
 class Type(Enum):
@@ -233,6 +269,7 @@ class State:
     def __init__(self, filepath):
         # table: store hash value of pieces, board: store access cost,
         # piece: store starting position, goal: store goal
+        self.gameboard = {}
         self.table = {}
         self.valid_moves = {}
         self.valid_capture = {}

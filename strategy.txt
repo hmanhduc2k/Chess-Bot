@@ -1,0 +1,17 @@
+Alpha-Beta pruning algorithm:
+
+Information needed in each state:
+1. List of all pieces on the chess board. For each piece:
+    - What is the name of the piece?
+    - What is the current position of the piece?
+    - Which player is the piece belong to?
+2. For each piece, a list of valid move in each state
+3. For each piece, a list of valid capture in each state
+4. For each state, who is the current player to move?
+5. For each state, a list of all valid actions. This refers to a list of all possible move that can
+   be done by moving a single chess piece to any position
+6. For each state, check whether the king is checked (terminal state)
+7. For each state, the utility score
+8. Return, for each time calling AB.py:
+    - The optimal move as a MAX player (white)
+    - Update the dictionary of game board to correspond with the optimal move made
