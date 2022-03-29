@@ -20,8 +20,8 @@ def check(move):
 def isValid(x, y, state):
     return (x >= 0) and (x < state.board.cols) and (y >= 0) and (y < state.board.rows) and (state.table.get(Position(toChar(x), y)) is None)
 
-def isValidConstraint(x, y, board, table):
-    return (x >= 0) and (x < board.cols) and (y >= 0) and (y < board.rows) and (table.get(Position(toChar(x), y)) is None)
+def isValidConstraint(x, y, board):
+    return (x >= 0) and (x < board.cols) and (y >= 0) and (y < board.rows)
 
 def clean(s):
     s = s.replace('[', '')
@@ -39,42 +39,6 @@ def isPiece(piece):
     except Exception as err:
         return False
 
-
-import sys
-
-### IMPORTANT: Remove any print() functions or rename any print functions/variables/string when submitting on CodePost
-### The autograder will not run if it detects any print function.
-
-# Helper functions to aid in your implementation. Can edit/remove
-class Piece:
-    pass
-
-class Knight(Piece):
-    pass
-        
-class Rook(Piece):
-    pass
-
-class Bishop(Piece):
-    pass
-        
-class Queen(Piece):
-    pass
-        
-class King(Piece):
-    pass
-        
-class Pawn(Piece):
-    #New Piece to be implemented
-    pass
-
-class Game:
-    pass
-
-class State:
-    pass
-
-    
 # Type of chess piece
 class Type(Enum):
     King = 'King'
@@ -84,9 +48,13 @@ class Type(Enum):
     Knight = 'Knight'
     Pawn = 'Pawn'
 
+class Player(Enum):
+    White = 'White'
+    Black = 'Black'
+
 # Position of chess piece - x is char and y is int
 class Position:
-    def __init__(self, x, y):
+    def __init__(self, x:str, y:int):
         self.x = x  # col number in character - horizontal value
         self.y = y  # row number in integer - vertical value
     
@@ -104,134 +72,39 @@ class Position:
     def __hash__(self):
         return hash(self.x) ^ hash(self.y)
 
-# Representation of a chess piece - its current Position and its Type
 class Piece:
-    def __init__(self, currentPosition, type):
+    def __init__(self, currentPosition:Position, type:Type, player:Player):
         self.currentPosition = currentPosition
         self.x = toInt(currentPosition.x)
         self.y = currentPosition.y
         self.type = type
-        self.player = "Default"
+        self.player = player
+        if self.player is Player.White:
+            self.other_player = Player.Black
+        else:
+            self.other_player = Player.White
 
     def __lt__(self, other):
-        return isinstance(other, Piece) and self.x <= other.x
+        return isinstance(other, Piece) and self.x < other.x
     
-    def getPawn(self, board, table):
-        xs = []
-        
-
-    def getKing(self, board, table):
-        xs = []
-        if isValidConstraint(self.x - 1, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y - 1))
-        if isValidConstraint(self.x - 1, self.y, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y))
-        if isValidConstraint(self.x - 1, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y + 1))
-        if isValidConstraint(self.x, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x), self.y - 1))
-        if isValidConstraint(self.x, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x), self.y + 1))
-        if isValidConstraint(self.x + 1, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y - 1))
-        if isValidConstraint(self.x + 1, self.y, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y))
-        if isValidConstraint(self.x + 1, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y + 1))
-        return xs
-
-    def getKnight(self, board, table):
-        xs = []
-        if isValidConstraint(self.x - 2, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x - 2), self.y - 1))
-        if isValidConstraint(self.x - 1, self.y - 2, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y - 2))
-        if isValidConstraint(self.x + 2, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x + 2), self.y - 1))
-        if isValidConstraint(self.x + 1, self.y - 2, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y - 2))
-        if isValidConstraint(self.x - 2, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x - 2), self.y + 1))
-        if isValidConstraint(self.x - 1, self.y + 2, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y + 2))
-        if isValidConstraint(self.x + 1, self.y + 2, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y + 2))
-        if isValidConstraint(self.x + 2, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x + 2), self.y + 1))
-        return xs
-
-    def getRook(self, board, table):
-        xs = []
-        temp = self.x
-        while temp >= 0:
-            xs.append(Position(toChar(temp), self.y))
-            temp = temp - 1
-        temp = self.x
-        while temp < board.cols:
-            xs.append(Position(toChar(temp), self.y))
-            temp = temp + 1
-        temp = self.y
-        while temp >= 0:
-            xs.append(Position(toChar(self.x), temp))
-            temp = temp - 1
-        temp = self.y
-        while temp < board.rows:
-            xs.append(Position(toChar(self.x), temp))
-            temp = temp + 1
-        return xs
-
-    def getBishop(self, board, table):
-        xs = []
-        tempX = self.x
-        tempY = self.y
-        while tempX >= 0 and tempY >= 0:
-            xs.append(Position(toChar(tempX), tempY))
-            tempX = tempX - 1
-            tempY = tempY - 1
-        tempX = self.x
-        tempY = self.y
-        while tempX < board.cols and tempY >= 0:
-            xs.append(Position(toChar(tempX), tempY))
-            tempX = tempX + 1
-            tempY = tempY - 1
-        tempX = self.x
-        tempY = self.y
-        while tempX >= 0 and tempY < board.rows:
-            xs.append(Position(toChar(tempX), tempY))
-            tempX = tempX - 1
-            tempY = tempY + 1
-        tempX = self.x
-        tempY = self.y
-        while tempX < board.cols and tempY < board.rows:
-            xs.append(Position(toChar(tempX), tempY))
-            tempX = tempX + 1
-            tempY = tempY + 1
-        return xs
-
-    def getPawn(self, board, table):
-        xs = []
-        
-        
-
-    def getPosition(self):
-        return Position(toChar(self.x), self.y)
-
-    def getThreateningConstraints(self, board, table):
-        if self.type == Type.King:
-            return self.getKing(board, table)
-        elif self.type == Type.Rook:
-            return self.getRook(board, table)
-        elif self.type == Type.Bishop:
-            return self.getBishop(board, table)
-        elif self.type == Type.Queen:
-            return self.getRook(board, table) + self.getBishop(board, table)
-        elif self.type == Type.Knight:
-            return self.getKnight(board, table)
-        else:
-            return self.getPawn(board, table)
+    def isValidConstraint(self, x, y, board, table):
+        target = table.get(Position(toChar(x), y))
+        return (x >= 0) and (x < board.cols) and (y >= 0) and (y < board.rows) \
+            and (target is None or target.player is self.other_player)
+    
+    def isValidPawnCapture(self, x, y, board, table):
+        target = table.get(Position(toChar(x), y))
+        return (x >= 0) and (x < board.cols) and (y >= 0) and (y < board.rows) \
+            and (target is not None and target.player is self.other_player)
 
     def __str__(self):
-        return self.type.name + ' at ' + '(' + toChar(self.x) + ',' + str(self.y) + '), ' + self.player
+        return self.player.name + ' ' + self.type.name + ' at ' + '(' + toChar(self.x) + ',' + str(self.y) + ')'
+
+    def character(self):
+        return self.type.name, self.player.name
+
+    def valid_move(self, board, table):
+        pass
 
     def rep(self):
         if self.type == Type.King:
@@ -247,9 +120,197 @@ class Piece:
         else:
             return 'P'
 
+class Knight(Piece):
+    def __init__(self, position:Position, player:Player):
+        super().__init__(position, Type.Knight, player)
+
+    def valid_move(self, board, table):
+        xs = []
+        if super().isValidConstraint(self.x - 2, self.y - 1, board, table):
+            xs.append(Position(toChar(self.x - 2), self.y - 1))
+        if super().isValidConstraint(self.x - 1, self.y - 2, board, table):
+            xs.append(Position(toChar(self.x - 1), self.y - 2))
+        if super().isValidConstraint(self.x + 2, self.y - 1, board, table):
+            xs.append(Position(toChar(self.x + 2), self.y - 1))
+        if super().isValidConstraint(self.x + 1, self.y - 2, board, table):
+            xs.append(Position(toChar(self.x + 1), self.y - 2))
+        if super().isValidConstraint(self.x - 2, self.y + 1, board, table):
+            xs.append(Position(toChar(self.x - 2), self.y + 1))
+        if super().isValidConstraint(self.x - 1, self.y + 2, board, table):
+            xs.append(Position(toChar(self.x - 1), self.y + 2))
+        if super().isValidConstraint(self.x + 1, self.y + 2, board, table):
+            xs.append(Position(toChar(self.x + 1), self.y + 2))
+        if super().isValidConstraint(self.x + 2, self.y + 1, board, table):
+            xs.append(Position(toChar(self.x + 2), self.y + 1))
+        return xs
+
+        
+class Rook(Piece):
+    def __init__(self, position:Position, player:Player):
+        super().__init__(position, Type.Rook, player)
+
+    def valid_move(self, board, table):
+        xs = []
+        temp = self.x - 1
+        while temp >= 0:
+            pos = Position(toChar(temp), self.y)
+            if table.get(pos) is not None:
+                if table.get(pos).player is self.other_player:    # enemy piece
+                    xs.append(pos)
+                break
+            xs.append(pos)
+            temp = temp - 1
+        temp = self.x + 1
+        while temp < board.cols:
+            pos = Position(toChar(temp), self.y)
+            if table.get(pos) is not None:
+                if table.get(pos).player is self.other_player:    # enemy piece
+                    xs.append(pos)
+                # break if ally or enemy piece
+                break
+            xs.append(pos)
+            temp = temp + 1
+        temp = self.y - 1
+        while temp >= 0:
+            pos = Position(toChar(self.x), temp)
+            if table.get(pos) is not None:
+                if table.get(pos).player is self.other_player:    # enemy piece
+                    xs.append(pos)
+                # break if ally or enemy piece
+                break
+            xs.append(pos)
+            temp = temp - 1
+        temp = self.y + 1
+        while temp < board.rows:
+            pos = Position(toChar(self.x), temp)
+            if table.get(pos) is not None:
+                if table.get(pos).player is self.other_player:    # enemy piece
+                    xs.append(pos)
+                # break if ally or enemy piece
+                break
+            xs.append(pos)
+            temp = temp + 1
+        return xs
+
+class Bishop(Piece):
+    def __init__(self, position:Position, player:Player):
+        super().__init__(position, Type.Bishop, player)
+
+    def valid_move(self, board, table):
+        xs = []
+        tempX = self.x - 1
+        tempY = self.y - 1
+        while tempX >= 0 and tempY >= 0:
+            pos = Position(toChar(tempX), tempY)
+            if table.get(pos) is not None:
+                if table.get(pos).player is self.other_player:    # enemy piece
+                    xs.append(pos)
+                # break if ally or enemy piece
+                break
+            xs.append(pos)
+            tempX = tempX - 1
+            tempY = tempY - 1
+        tempX = self.x + 1
+        tempY = self.y - 1
+        while tempX < board.cols and tempY >= 0:
+            pos = Position(toChar(tempX), tempY)
+            if table.get(pos) is not None:
+                if table.get(pos).player is self.other_player:    # enemy piece
+                    xs.append(pos)
+                # break if ally or enemy piece
+                break
+            xs.append(pos)
+            tempX = tempX + 1
+            tempY = tempY - 1
+        tempX = self.x - 1
+        tempY = self.y + 1
+        while tempX >= 0 and tempY < board.rows:
+            pos = Position(toChar(tempX), tempY)
+            if table.get(pos) is not None:
+                if table.get(pos).player is self.other_player:    # enemy piece
+                    xs.append(pos)
+                # break if ally or enemy piece
+                break
+            xs.append(pos)
+            tempX = tempX - 1
+            tempY = tempY + 1
+        tempX = self.x + 1
+        tempY = self.y + 1
+        while tempX < board.cols and tempY < board.rows:
+            pos = Position(toChar(tempX), tempY)
+            if table.get(pos) is not None:
+                if table.get(pos).player is self.other_player:    # enemy piece
+                    xs.append(pos)
+                # break if ally or enemy piece
+                break
+            xs.append(pos)
+            tempX = tempX + 1
+            tempY = tempY + 1
+        return xs
+        
+class Queen(Piece):
+    def __init__(self, position:Position, player:Player):
+        super().__init__(position, Type.Queen, player)
+        self.position = position
+        self.player = player
+
+    def valid_move(self, board, table):
+        a = Rook(self.position, self.player)
+        b = Bishop(self.position, self.player)
+        return a.valid_move(board, table) + b.valid_move(board, table)
+        
+class King(Piece):
+    def __init__(self, position:Position, player:Player):
+        super().__init__(position, Type.King, player)
+
+    def valid_move(self, board, table):
+        xs = []
+        if super().isValidConstraint(self.x - 1, self.y - 1, board, table):
+            xs.append(Position(toChar(self.x - 1), self.y - 1))
+        if super().isValidConstraint(self.x - 1, self.y, board, table):
+            xs.append(Position(toChar(self.x - 1), self.y))
+        if super().isValidConstraint(self.x - 1, self.y + 1, board, table):
+            xs.append(Position(toChar(self.x - 1), self.y + 1))
+        if super().isValidConstraint(self.x, self.y - 1, board, table):
+            xs.append(Position(toChar(self.x), self.y - 1))
+        if super().isValidConstraint(self.x, self.y + 1, board, table):
+            xs.append(Position(toChar(self.x), self.y + 1))
+        if super().isValidConstraint(self.x + 1, self.y - 1, board, table):
+            xs.append(Position(toChar(self.x + 1), self.y - 1))
+        if super().isValidConstraint(self.x + 1, self.y, board, table):
+            xs.append(Position(toChar(self.x + 1), self.y))
+        if super().isValidConstraint(self.x + 1, self.y + 1, board, table):
+            xs.append(Position(toChar(self.x + 1), self.y + 1))
+        return xs
+
+        
+class Pawn(Piece):
+    def __init__(self, position:Position, player:Player):
+        super().__init__(position, Type.Pawn, player)
+
+    def valid_move(self, board, table):
+        xs = []
+        if self.player is Player.White:
+            if self.y + 1 < board.rows and table.get(Position(toChar(self.x), self.y + 1)) is None:
+                xs.append(Position(toChar(self.x), self.y + 1))
+            if super().isValidPawnCapture(self.x - 1, self.y + 1, board, table):
+                xs.append(Position(toChar(self.x - 1), self.y + 1))
+            if super().isValidPawnCapture(self.x + 1, self.y + 1, board, table):
+                xs.append(Position(toChar(self.x + 1), self.y + 1))
+        
+        if self.player is Player.Black: 
+            if self.y - 1 >= 0 and table.get(Position(toChar(self.x), self.y - 1)) is None:
+                xs.append(Position(toChar(self.x), self.y - 1))
+            if super().isValidPawnCapture(self.x - 1, self.y - 1, board, table):
+                xs.append(Position(toChar(self.x - 1), self.y - 1))
+            if super().isValidPawnCapture(self.x + 1, self.y - 1, board, table):
+                xs.append(Position(toChar(self.x + 1), self.y - 1))
+
+        return xs
+
 # Representation of a chess board - including height and width
 class Board:
-    def __init__(self, rows, cols):
+    def __init__(self, rows:int, cols:int):
         self.rows = rows   # refers to the number of rows
         self.cols = cols   # refers to the number of columns
         self.table = []
@@ -264,18 +325,37 @@ class Board:
             res = res + str(row) + "\n"
         return res
 
+def parse_piece(position:Position, type:Type, isEnemy:bool):
+    if isEnemy:
+        player = Player.Black
+    else:
+        player = Player.White
+    if type is Type.King:
+        return King(position, player)
+    elif type is Type.Queen:
+        return Queen(position, player)
+    elif type is Type.Rook:
+        return Rook(position, player)
+    elif type is Type.Bishop:
+        return Bishop(position, player)
+    elif type is Type.Knight:
+        return Knight(position, player)
+    else:
+        return Pawn(position, player)
+
 # Representation of the state of the chess game
 class State:
-    def __init__(self, filepath):
+    def __init__(self, filepath=None):
         # table: store hash value of pieces, board: store access cost,
         # piece: store starting position, goal: store goal
         self.gameboard = {}
         self.table = {}
         self.valid_moves = {}
-        self.valid_capture = {}
+        self.threats = {}
         isEnemy = False
-        isAlly = False
         count = 1
+        if filepath is None:
+            return
         with open(filepath) as fp:
             line = fp.readline()
             while line:
@@ -287,54 +367,59 @@ class State:
                 elif line.startswith("Cols"):
                     self.boardCol = int(line.split("Cols:")[1])
                     self.board = Board(self.boardRow, self.boardCol)
-                    self.domain = set(self.board.table)
                 
                 elif line.startswith("Position of Enemy Pieces:"):
                     isEnemy = True
-                    isAlly = False
 
                 elif line.startswith("Starting Position of Pieces"):
                     isEnemy = False
-                    isAlly = True
 
                 elif isPiece(line):
                     line = clean(line)
                     arr = line.split(',')
                     pos = Position(arr[1][0], int(arr[1][1:]))
-                    curr = Piece(pos, Type[arr[0]])
-                    if isEnemy:
-                        curr.player = "Black"
-                    if isAlly:
-                        curr.player = "White"
+                    curr = parse_piece(pos, Type[arr[0]], isEnemy)
                     self.table[pos] = curr
-                    xs = curr.getThreateningConstraints(self.board, self.table)
-                    self.valid_moves[curr] = xs
+                    self.gameboard[pos.get()] = curr.character()
 
                 line = fp.readline()
                 count = count + 1
-        self.pieces = []
+        self.get_valid_moves()
+    
+    def init_game(gameboard):
+        state = State()
+        state.gameboard = gameboard
 
-    def getState(self):
-        res = ''
-        for i in range(self.board.rows):
-            x = '|'
-            if i < 10:
-                x = '0' + str(i) + x
-            else:
-                x = str(i) + x
-            for j in range(self.board.cols):
-                curr = Position(toChar(j), i)
-                if curr in self.table:
-                    print(self.table.get(curr))
-                    x = x + self.table.get(curr).rep() + '|'
-                else:
-                    x = x + ' |'
-            x = x + '\n'
-            res = res + x
-        res = res + '  |'
-        for j in range(self.board.cols):
-            res = res + toChar(j) + '|'
-        return res + '\n'
+        keys = list(gameboard.keys())
+        state.boardRow = toInt(max(map(lambda x: x[0], gb))) + 1
+        state.boardCol = max(map(lambda x: x[1], gb)) + 1
+        state.board = Board(state.boardRow, state.boardCol)
+
+        for key in gameboard:
+            pos = Position(key[0], key[1])
+            val = gameboard.get(key)
+            pcs = parse_piece(pos, Type[val[0]], Player[val[1]] is Player.Black)
+            state.table[pos] = pcs
+        
+        state.get_valid_moves()
+        return state
+
+    def get_valid_moves(self):
+        for pos in self.table:
+            pcs = self.table.get(pos)
+            # get a list of all valid move a piece can make on the game for each piece
+            vm = pcs.valid_move(self.board, self.table)
+            self.valid_moves[pcs] = vm
+        for piece in self.valid_moves:
+            self.threats[piece] = []
+        # for each piece, retrieve all valid move and whether there is a piece on that position
+        # retrieve the piece on that position, and add the current piece to the enemy list
+        for piece in self.valid_moves:
+            curr_list = self.valid_moves.get(piece)
+            for pos in curr_list:
+                pc = self.table.get(pos)
+                if pc is not None:
+                    self.threats.get(pc).append(piece)
 
     def __str__(self):
         res = ''
@@ -347,7 +432,6 @@ class State:
             for j in range(self.board.cols):
                 curr = Position(toChar(j), i)
                 if self.table.get(curr) is not None:
-                    print(self.table.get(curr))
                     x = x + self.table.get(curr).rep() + '|'
                 else:
                     x = x + ' |'
@@ -360,24 +444,27 @@ class State:
     
     def getInfo(self):
         print(str(self))
-        print('Number of obstacles is ' + str(len(self.obstacles)))
-        temp = 'Obstacles are in: '
-        for pos in self.obstacles:
-            temp = temp + str(pos) + ', '
-        print(temp)
-        temp = 'All vacant positions: '
-        for pos in self.domain:
-            temp = temp + str(pos) + ', '
-        print(temp)
-        for type in self.variables:
-            print(type.name, self.variables.get(type))
+        for pos in self.table:
+            pcs = self.table.get(pos)
+            print(pcs)
+            temp = "Can move to positions: "
+            for x in self.valid_moves.get(pcs):
+                temp = temp + str(x) + ', '
+            print(temp)
+            temp = "Threatened by: "
+            for x in self.threats.get(pcs):
+                temp = temp + str(x) + ', '
+            print(temp)
+            print("\n")
+        print(self.gameboard)
+
+class Game:
+    pass
         
 
 #Implement your minimax with alpha-beta pruning algorithm here.
 def ab():
     pass
-
-
 
 ### DO NOT EDIT/REMOVE THE FUNCTION HEADER BELOW###
 # Chess Pieces: King, Queen, Knight, Bishop, Rook (First letter capitalized)
@@ -401,4 +488,11 @@ def studentAgent(gameboard):
     move = (None, None)
     return move #Format to be returned (('a', 0), ('b', 3))
 
-print(State(sys.argv[1]))
+start = time.time()
+state = State(sys.argv[1])
+# state.getInfo()
+gb = state.gameboard
+s = State.init_game(gb)
+s.getInfo()
+# print(parse_piece(Position('a', 1), Type['Knight'], Player['White'] is Player.Black))
+print(time.time() - start)

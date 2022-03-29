@@ -1,27 +1,84 @@
-Rook at (a,0), White
-Knight at (b,0), White
-Bishop at (c,0), White
-Queen at (d,0), White
-King at (e,0), White
-Pawn at (a,1), White
-Pawn at (b,1), White
-Pawn at (c,1), White
-Pawn at (d,1), White
-Pawn at (e,1), White
-Pawn at (a,3), Black
-Pawn at (b,3), Black
-Pawn at (c,3), Black
-Pawn at (d,3), Black
-Pawn at (e,3), Black
-Rook at (a,4), Black
-Knight at (b,4), Black
-Bishop at (c,4), Black
-Queen at (d,4), Black
-King at (e,4), Black
 00|R|M|B|Q|K|
-01|P|P|P|P|P|
-02| | | | | |
-03|P|P|P|P|P|
-04|R|M|B|Q|K|
+01| | |P|P|P|
+02| |P| | | |
+03|P| | |Q| |
+04|R|M|B| |K|
   |a|b|c|d|e|
 
+Black King at (e,4)
+Can move to positions: (d,4), (e,3), 
+Threatened by: 
+
+
+Black Queen at (d,3)
+Can move to positions: (c,3), (b,3), (e,3), (d,2), (d,1), (d,4), (c,2), (b,1), (a,0), (e,2), 
+Threatened by: 
+
+
+Black Bishop at (c,4)
+Can move to positions: (b,3), (a,2), 
+Threatened by: 
+
+
+Black Knight at (b,4)
+Can move to positions: (a,2), (c,2), 
+Threatened by: 
+
+
+Black Rook at (a,4)
+Can move to positions: 
+Threatened by: 
+
+
+Black Pawn at (a,3)
+Can move to positions: (a,2), (b,2), 
+Threatened by: White Rook at (a,0), White Pawn at (b,2), 
+
+
+White King at (e,0)
+Can move to positions: 
+Threatened by: 
+
+
+White Queen at (d,0)
+Can move to positions: 
+Threatened by: 
+
+
+White Bishop at (c,0)
+Can move to positions: (b,1), (a,2), 
+Threatened by: 
+
+
+White Knight at (b,0)
+Can move to positions: (a,2), (c,2), 
+Threatened by: 
+
+
+White Rook at (a,0)
+Can move to positions: (a,1), (a,2), (a,3), 
+Threatened by: Black Queen at (d,3), 
+
+
+White Pawn at (b,2)
+Can move to positions: (b,3), (a,3), 
+Threatened by: Black Pawn at (a,3), 
+
+
+White Pawn at (c,1)
+Can move to positions: (c,2), 
+Threatened by: 
+
+
+White Pawn at (d,1)
+Can move to positions: (d,2), 
+Threatened by: Black Queen at (d,3), 
+
+
+White Pawn at (e,1)
+Can move to positions: (e,2), 
+Threatened by: 
+
+
+{('e', 4): ('King', 'Black'), ('d', 3): ('Queen', 'Black'), ('c', 4): ('Bishop', 'Black'), ('b', 4): ('Knight', 'Black'), ('a', 4): ('Rook', 'Black'), ('a', 3): ('Pawn', 'Black'), ('e', 0): ('King', 'White'), ('d', 0): ('Queen', 'White'), ('c', 0): ('Bishop', 'White'), ('b', 0): ('Knight', 'White'), ('a', 0): ('Rook', 'White'), ('b', 2): ('Pawn', 'White'), ('c', 1): ('Pawn', 'White'), ('d', 1): ('Pawn', 'White'), ('e', 1): ('Pawn', 'White')}
+0.0007748603820800781
