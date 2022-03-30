@@ -14,15 +14,6 @@ def toInt(c):
 def toChar(i):
     return chr(i + 97)
 
-def check(move):
-    return toInt(move[0]) >= 0 & toInt(move[0]) < 26 & move[1] >= 0
-
-def isValid(x, y, state):
-    return (x >= 0) and (x < state.board.cols) and (y >= 0) and (y < state.board.rows) and (state.table.get(Position(toChar(x), y)) is None)
-
-def isValidConstraint(x, y, board):
-    return (x >= 0) and (x < board.cols) and (y >= 0) and (y < board.rows)
-
 def clean(s):
     s = s.replace('[', '')
     s = s.replace(']', '')
@@ -83,6 +74,7 @@ class Piece:
             self.other_player = Player.Black
         else:
             self.other_player = Player.White
+        # self.value = 0
 
     def __lt__(self, other):
         return isinstance(other, Piece) and self.x < other.x
@@ -123,6 +115,7 @@ class Piece:
 class Knight(Piece):
     def __init__(self, position:Position, player:Player):
         super().__init__(position, Type.Knight, player)
+        self.value = 30
 
     def valid_move(self, board, table):
         xs = []
@@ -148,6 +141,7 @@ class Knight(Piece):
 class Rook(Piece):
     def __init__(self, position:Position, player:Player):
         super().__init__(position, Type.Rook, player)
+        self.value = 80
 
     def valid_move(self, board, table):
         xs = []
@@ -195,6 +189,7 @@ class Rook(Piece):
 class Bishop(Piece):
     def __init__(self, position:Position, player:Player):
         super().__init__(position, Type.Bishop, player)
+        self.value = 50
 
     def valid_move(self, board, table):
         xs = []
@@ -253,6 +248,7 @@ class Queen(Piece):
         super().__init__(position, Type.Queen, player)
         self.position = position
         self.player = player
+        self.value = 200
 
     def valid_move(self, board, table):
         a = Rook(self.position, self.player)
@@ -262,6 +258,7 @@ class Queen(Piece):
 class King(Piece):
     def __init__(self, position:Position, player:Player):
         super().__init__(position, Type.King, player)
+        self.value = 2000
 
     def valid_move(self, board, table):
         xs = []
@@ -287,6 +284,7 @@ class King(Piece):
 class Pawn(Piece):
     def __init__(self, position:Position, player:Player):
         super().__init__(position, Type.Pawn, player)
+        self.value = 10
 
     def valid_move(self, board, table):
         xs = []
@@ -348,10 +346,11 @@ class State:
     def __init__(self, filepath=None):
         # table: store hash value of pieces, board: store access cost,
         # piece: store starting position, goal: store goal
-        self.gameboard = {}
-        self.table = {}
-        self.valid_moves = {}
-        self.threats = {}
+        self.gameboard = {}     # gameboard representation as per the question
+        self.table = {}         # hash map of position -> piece
+        self.valid_moves = {}   # hash map of piece -> valid position it can move to (list of children state?)
+        self.threats = {}       # hash map of piece -> other piece threatening it
+
         isEnemy = False
         count = 1
         if filepath is None:
@@ -366,7 +365,7 @@ class State:
                 # Get the number of column and initiate chess board
                 elif line.startswith("Cols"):
                     self.boardCol = int(line.split("Cols:")[1])
-                    self.board = Board(self.boardRow, self.boardCol)
+                    self.board = Board(self.boardRow, self.boardCol)    # representation of the chess board (initial)
                 
                 elif line.startswith("Position of Enemy Pieces:"):
                     isEnemy = True
@@ -385,6 +384,8 @@ class State:
                 line = fp.readline()
                 count = count + 1
         self.get_valid_moves()
+        self.value = 0      # value of the state
+        self.move = None, None
     
     def init_game(gameboard):
         state = State()
@@ -393,7 +394,7 @@ class State:
         keys = list(gameboard.keys())
         state.boardRow = toInt(max(map(lambda x: x[0], gb))) + 1
         state.boardCol = max(map(lambda x: x[1], gb)) + 1
-        state.board = Board(state.boardRow, state.boardCol)
+        state.board = Board(5, 5)
 
         for key in gameboard:
             pos = Position(key[0], key[1])
@@ -420,6 +421,27 @@ class State:
                 pc = self.table.get(pos)
                 if pc is not None:
                     self.threats.get(pc).append(piece)
+    
+    # children state (next state) is defined as moving a piece to another position
+    # in the process, enemy piece might be captured
+    def get_children(self, piece, next_position):
+        next_state = deepcopy(self)
+        next_state.valid_moves.clear()      # clear list of valid move
+        next_state.threats.clear()          # clear list of threats
+        del next_state.table[piece.currentPosition]    # clear current position of the piece
+
+        next_state.table[next_position] = parse_piece(next_position, piece.type, piece.player is Player.Black)
+        next_state.move = piece.currentPosition.get(), next_position.get()
+        next_state.get_valid_moves()
+        return next_state
+
+    # def is_terminal(self):
+    #     # state is terminal if when the player is checkmated
+    #     xs = list(filter(lambda x: x.type == Type.King and x.player == self.player, self.table.values()))
+    #     if len(xs) == 0:
+    #         return True
+    #     king = xs[0]
+    #     return xs
 
     def __str__(self):
         res = ''
@@ -447,7 +469,7 @@ class State:
         for pos in self.table:
             pcs = self.table.get(pos)
             print(pcs)
-            temp = "Can move to positions: "
+            temp = "Can move to position or capture pieces at: "
             for x in self.valid_moves.get(pcs):
                 temp = temp + str(x) + ', '
             print(temp)
@@ -458,13 +480,89 @@ class State:
             print("\n")
         print(self.gameboard)
 
+
+# hash map of position -> piece in that position (table)
+# hash map of piece -> valid position it can move to (valid_moves)
+# hash map of piece -> other piece threatening it   (threats)
+# board of the chess game
+# value of the state (value of max player minus min player)
 class Game:
-    pass
-        
+    def __init__(self, state, player):
+        self.state = state      # current state of the game
+        self.player = player    # current player of the game
+        self.parent = None
+        self.children = []      # children of the state (next possible moves)
+        for pcs in state.valid_moves:
+            # consider a current piece on the chess board, retrieve all possible moves
+            if pcs.player != player:
+                continue
+            moves = state.valid_moves.get(pcs)
+            # more efficient algorithm should be considered here
+            for pos in moves:
+                # move the current piece to the position indicated
+                next_state = deepcopy(state)
+                next_state.valid_moves.clear()      # clear list of valid move
+                next_state.threats.clear()          # clear list of threats
+                del next_state.table[pcs.currentPosition]    # clear current position of the piece
+                next_state.table[pos] = parse_piece(pos, pcs.type, pcs.player is Player.Black)
+                next_state.move = pcs.currentPosition.get(), pos.get()
+                next_state.get_valid_moves()
+                self.children.append(next_state)
+    
+    def opponent(self):
+        if self.player is Player.White:
+            return Player.Black
+        else:
+            return Player.White
+
+    def is_terminal(self):
+        # reminder to write terminal state later
+        pass
+
+def evaluate(state):
+    white_res = 0
+    black_res = 0
+    for pos in state.table:
+        pcs = state.table.get(pos)
+        if pcs.player is Player.White:
+            white_res = white_res + pcs.value
+        else:
+            black_res = black_res + pcs.value
+    return white_res - black_res
+
+def minimax(state, alpha, beta, isMaxPlayer, depth):
+    if depth == 0 or state.is_terminal():
+        return state.value
+    
+    if isMaxPlayer:
+        bestVal = - float('inf')
+        for s in state.children:
+            value = minimax(s, alpha, beta, False, depth - 1)
+            bestVal = max(bestVal, value) 
+            alpha = max(alpha, bestVal)
+            if beta <= alpha:
+                break
+        return bestVal
+
+    else:
+        bestVal = float('inf')
+        for s in state.children:
+            value = minimax(s, alpha, beta, True, depth - 1)
+            bestVal = min(bestVal, value) 
+            beta = min( beta, bestVal)
+            if beta <= alpha:
+                break
+        return bestVal
 
 #Implement your minimax with alpha-beta pruning algorithm here.
-def ab():
-    pass
+def ab(gameboard):
+    state = State.init_game(gameboard)
+    game = Game(state, Player.White)
+    print(game.state)
+    for s in game.children:
+        print(s)
+    # next_state = minimax(state, -float('inf'), float('inf'), True, 4)
+    # return state, next_state
 
 ### DO NOT EDIT/REMOVE THE FUNCTION HEADER BELOW###
 # Chess Pieces: King, Queen, Knight, Bishop, Rook (First letter capitalized)
@@ -485,14 +583,12 @@ def studentAgent(gameboard):
     # You can code in here but you cannot remove this function, change its parameter or change the return type
     config = sys.argv[1] #Takes in config.txt Optional
 
-    move = (None, None)
+    move = ab(gameboard)
     return move #Format to be returned (('a', 0), ('b', 3))
 
 start = time.time()
 state = State(sys.argv[1])
-# state.getInfo()
+
 gb = state.gameboard
-s = State.init_game(gb)
-s.getInfo()
-# print(parse_piece(Position('a', 1), Type['Knight'], Player['White'] is Player.Black))
+ab(gb)
 print(time.time() - start)

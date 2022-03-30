@@ -1,84 +1,148 @@
-00|R|M|B|Q|K|
-01| | |P|P|P|
-02| |P| | | |
-03|P| | |Q| |
-04|R|M|B| |K|
+00|R| |B|Q|K|
+01|P|P| | | |
+02| | |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
   |a|b|c|d|e|
 
-Black King at (e,4)
-Can move to positions: (d,4), (e,3), 
-Threatened by: 
+00|R| |B|Q| |
+01|P|P| |K| |
+02| | |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R| |B|Q| |
+01|P|P| | |K|
+02| | |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-Black Queen at (d,3)
-Can move to positions: (c,3), (b,3), (e,3), (d,2), (d,1), (d,4), (c,2), (b,1), (a,0), (e,2), 
-Threatened by: 
+00|R| |B| |K|
+01|P|P| |Q| |
+02| | |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R| |B| |K|
+01|P|P| | | |
+02| | |M|Q| |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-Black Bishop at (c,4)
-Can move to positions: (b,3), (a,2), 
-Threatened by: 
+00|R| |B| |K|
+01|P|P| | | |
+02| | |M| | |
+03|P|P|P|Q|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R| |B| |K|
+01|P|P|Q| | |
+02| | |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-Black Knight at (b,4)
-Can move to positions: (a,2), (c,2), 
-Threatened by: 
+00|R| |B| |K|
+01|P|P| | | |
+02| |Q|M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R| |B| |K|
+01|P|P| | | |
+02| | |M| | |
+03|Q|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-Black Rook at (a,4)
-Can move to positions: 
-Threatened by: 
+00|R| |B| |K|
+01|P|P| | |Q|
+02| | |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R| | |Q|K|
+01|P|P| |B| |
+02| | |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-Black Pawn at (a,3)
-Can move to positions: (a,2), (b,2), 
-Threatened by: White Rook at (a,0), White Pawn at (b,2), 
+00|R| | |Q|K|
+01|P|P| | | |
+02| | |M| |B|
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R|M|B|Q|K|
+01|P|P| | | |
+02| | | | | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-White King at (e,0)
-Can move to positions: 
-Threatened by: 
+00|R| |B|Q|K|
+01|P|P| | |M|
+02| | | | | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R| |B|Q|K|
+01|P|P| | | |
+02| | | | | |
+03|M|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-White Queen at (d,0)
-Can move to positions: 
-Threatened by: 
+00|R| |B|Q|K|
+01|P|P| | | |
+02| | | | | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R| |B|Q|K|
+01|P|P| | | |
+02| | | | | |
+03|P|P|P|P|P|
+04|R|M|B|M|K|
+  |a|b|c|d|e|
 
-White Bishop at (c,0)
-Can move to positions: (b,1), (a,2), 
-Threatened by: 
+00|R| |B|Q|K|
+01|P|P| | | |
+02| | | | | |
+03|P|P|P|P|M|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00| |R|B|Q|K|
+01|P|P| | | |
+02| | |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-White Knight at (b,0)
-Can move to positions: (a,2), (c,2), 
-Threatened by: 
+00|R| |B|Q|K|
+01| |P| | | |
+02|P| |M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
+00|R| |B|Q|K|
+01|P| | | | |
+02| |P|M| | |
+03|P|P|P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
 
-White Rook at (a,0)
-Can move to positions: (a,1), (a,2), (a,3), 
-Threatened by: Black Queen at (d,3), 
-
-
-White Pawn at (b,2)
-Can move to positions: (b,3), (a,3), 
-Threatened by: Black Pawn at (a,3), 
-
-
-White Pawn at (c,1)
-Can move to positions: (c,2), 
-Threatened by: 
-
-
-White Pawn at (d,1)
-Can move to positions: (d,2), 
-Threatened by: Black Queen at (d,3), 
-
-
-White Pawn at (e,1)
-Can move to positions: (e,2), 
-Threatened by: 
-
-
-{('e', 4): ('King', 'Black'), ('d', 3): ('Queen', 'Black'), ('c', 4): ('Bishop', 'Black'), ('b', 4): ('Knight', 'Black'), ('a', 4): ('Rook', 'Black'), ('a', 3): ('Pawn', 'Black'), ('e', 0): ('King', 'White'), ('d', 0): ('Queen', 'White'), ('c', 0): ('Bishop', 'White'), ('b', 0): ('Knight', 'White'), ('a', 0): ('Rook', 'White'), ('b', 2): ('Pawn', 'White'), ('c', 1): ('Pawn', 'White'), ('d', 1): ('Pawn', 'White'), ('e', 1): ('Pawn', 'White')}
-0.0007748603820800781
+0.019517183303833008

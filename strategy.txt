@@ -15,3 +15,14 @@ Information needed in each state:
 8. Return, for each time calling AB.py:
     - The optimal move as a MAX player (white)
     - Update the dictionary of game board to correspond with the optimal move made
+
+
+Flow of the algorithm:
+1. Initialize gameboard from the dictionary to get the initial state of the game
+2. Set up the game configuration (with player and children state)
+3. Implement Minimax algorithm with Alpha-Beta pruning as follow:
+    - Max player will consider the best state based on evaluation value
+    - Normal Alpha-Beta pruning happen. Instead of one state, consider a multiple-state configuration
+    of the game with the current player (Black or White)
+    - For each children state, generate a game configuration with the next player and the next state
+    - Pass in the algorithm as normal
