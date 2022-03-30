@@ -411,8 +411,6 @@ class State:
             # get a list of all valid move a piece can make on the game for each piece
             vm = pcs.valid_move(self.board, self.table)
             self.valid_moves[pcs] = vm
-        for piece in self.valid_moves:
-            self.threats[piece] = []
         # for each piece, retrieve all valid move and whether there is a piece on that position
         # retrieve the piece on that position, and add the current piece to the enemy list
         for piece in self.valid_moves:
@@ -420,11 +418,14 @@ class State:
             for pos in curr_list:
                 pc = self.table.get(pos)
                 if pc is not None:
-                    self.threats.get(pc).append(piece)
+                    if self.threats.get(pc) is None:
+                        self.threats[pc] = []
+                    else:
+                        self.threats.get(pc).append(piece)
     
     # children state (next state) is defined as moving a piece to another position
     # in the process, enemy piece might be captured
-    def get_children(self, piece, next_position):
+    def get_child(self, piece, next_position):
         next_state = deepcopy(self)
         next_state.valid_moves.clear()      # clear list of valid move
         next_state.threats.clear()          # clear list of threats
@@ -435,13 +436,13 @@ class State:
         next_state.get_valid_moves()
         return next_state
 
-    # def is_terminal(self):
-    #     # state is terminal if when the player is checkmated
-    #     xs = list(filter(lambda x: x.type == Type.King and x.player == self.player, self.table.values()))
-    #     if len(xs) == 0:
-    #         return True
-    #     king = xs[0]
-    #     return xs
+    def is_terminal(self):
+        # state is terminal if when the player is checkmated
+        xs = list(filter(lambda x: x.type == Type.King and x.player == self.player, self.table.values()))
+        if len(xs) == 0:
+            return True
+        king = xs[0]
+        return xs
 
     def __str__(self):
         res = ''
@@ -480,45 +481,7 @@ class State:
             print("\n")
         print(self.gameboard)
 
-
-# hash map of position -> piece in that position (table)
-# hash map of piece -> valid position it can move to (valid_moves)
-# hash map of piece -> other piece threatening it   (threats)
-# board of the chess game
-# value of the state (value of max player minus min player)
-class Game:
-    def __init__(self, state, player):
-        self.state = state      # current state of the game
-        self.player = player    # current player of the game
-        self.parent = None
-        self.children = []      # children of the state (next possible moves)
-        for pcs in state.valid_moves:
-            # consider a current piece on the chess board, retrieve all possible moves
-            if pcs.player != player:
-                continue
-            moves = state.valid_moves.get(pcs)
-            # more efficient algorithm should be considered here
-            for pos in moves:
-                # move the current piece to the position indicated
-                next_state = deepcopy(state)
-                next_state.valid_moves.clear()      # clear list of valid move
-                next_state.threats.clear()          # clear list of threats
-                del next_state.table[pcs.currentPosition]    # clear current position of the piece
-                next_state.table[pos] = parse_piece(pos, pcs.type, pcs.player is Player.Black)
-                next_state.move = pcs.currentPosition.get(), pos.get()
-                next_state.get_valid_moves()
-                self.children.append(next_state)
-    
-    def opponent(self):
-        if self.player is Player.White:
-            return Player.Black
-        else:
-            return Player.White
-
-    def is_terminal(self):
-        # reminder to write terminal state later
-        pass
-
+# evaluate the value of a state
 def evaluate(state):
     white_res = 0
     black_res = 0
@@ -532,7 +495,7 @@ def evaluate(state):
 
 def minimax(state, alpha, beta, isMaxPlayer, depth):
     if depth == 0 or state.is_terminal():
-        return state.value
+        return state, evaluate(state)
     
     if isMaxPlayer:
         bestVal = - float('inf')
@@ -557,10 +520,12 @@ def minimax(state, alpha, beta, isMaxPlayer, depth):
 #Implement your minimax with alpha-beta pruning algorithm here.
 def ab(gameboard):
     state = State.init_game(gameboard)
-    game = Game(state, Player.White)
-    print(game.state)
-    for s in game.children:
-        print(s)
+    print(state, evaluate(state))
+    for piece in state.valid_moves:
+        temp = state.valid_moves.get(piece)
+        for pos in temp:
+            next_state = state.get_child(piece, pos)
+            print(next_state, evaluate(next_state))
     # next_state = minimax(state, -float('inf'), float('inf'), True, 4)
     # return state, next_state
 
