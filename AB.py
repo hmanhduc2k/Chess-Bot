@@ -78,6 +78,13 @@ class Piece:
 
     def __lt__(self, other):
         return isinstance(other, Piece) and self.x < other.x
+
+    def __eq__(self, other):
+        return isinstance(other, Piece) and self.currentPosition == other.currentPosition \
+            and self.type == other.type and self.player == other.player
+
+    def __hash__(self):
+        return hash(self.currentPosition) ^ hash(self.type) ^ hash(self.player)
     
     def isValidConstraint(self, x, y, board, table):
         target = table.get(Position(toChar(x), y))
@@ -350,11 +357,13 @@ class State:
         self.table = {}         # hash map of position -> piece
         self.valid_moves = {}   # hash map of piece -> valid position it can move to (list of children state?)
         self.threats = {}       # hash map of piece -> other piece threatening it
-
-        isEnemy = False
-        count = 1
+        self.move = None, None
+        self.value = None
+        self.player = Player.White
         if filepath is None:
             return
+        isEnemy = False
+        count = 1
         with open(filepath) as fp:
             line = fp.readline()
             while line:
@@ -383,28 +392,8 @@ class State:
 
                 line = fp.readline()
                 count = count + 1
-        self.get_valid_moves()
-        self.value = 0      # value of the state
-        self.move = None, None
+        self.get_valid_moves()      
     
-    def init_game(gameboard):
-        state = State()
-        state.gameboard = gameboard
-
-        keys = list(gameboard.keys())
-        state.boardRow = toInt(max(map(lambda x: x[0], gb))) + 1
-        state.boardCol = max(map(lambda x: x[1], gb)) + 1
-        state.board = Board(5, 5)
-
-        for key in gameboard:
-            pos = Position(key[0], key[1])
-            val = gameboard.get(key)
-            pcs = parse_piece(pos, Type[val[0]], Player[val[1]] is Player.Black)
-            state.table[pos] = pcs
-        
-        state.get_valid_moves()
-        return state
-
     def get_valid_moves(self):
         for pos in self.table:
             pcs = self.table.get(pos)
@@ -422,6 +411,23 @@ class State:
                         self.threats[pc] = []
                     else:
                         self.threats.get(pc).append(piece)
+        self.value = self.evaluate()
+    
+    def init_game(gameboard):
+        state = State()
+        state.gameboard = gameboard
+        keys = list(gameboard.keys())
+        state.board = Board(5, 5)
+        state.player = Player.White
+
+        for key in gameboard:
+            pos = Position(key[0], key[1])
+            val = gameboard.get(key)
+            pcs = parse_piece(pos, Type[val[0]], Player[val[1]] is Player.Black)
+            state.table[pos] = pcs
+        
+        state.get_valid_moves()
+        return state
     
     # children state (next state) is defined as moving a piece to another position
     # in the process, enemy piece might be captured
@@ -433,16 +439,47 @@ class State:
 
         next_state.table[next_position] = parse_piece(next_position, piece.type, piece.player is Player.Black)
         next_state.move = piece.currentPosition.get(), next_position.get()
+        del next_state.gameboard[piece.currentPosition.get()]
+        next_state.gameboard[next_position.get()] = piece.character()
         next_state.get_valid_moves()
+        if self.player is Player.White:
+            next_state.player = Player.Black
+        else:
+            next_state.player = Player.White
         return next_state
+
+    # evaluate the value of a state
+    def evaluate(self):
+        white_res = 0
+        black_res = 0
+        for pos in self.table:
+            pcs = self.table.get(pos)
+            if self.threats.get(pcs) is None:
+                val = pcs.value
+            else:
+                val = pcs.value ** (1/2)
+            
+            if pcs.player is Player.White:
+                white_res = white_res + val
+            else:
+                black_res = black_res + val
+        return white_res - black_res
 
     def is_terminal(self):
         # state is terminal if when the player is checkmated
-        xs = list(filter(lambda x: x.type == Type.King and x.player == self.player, self.table.values()))
+        xs = list(filter(lambda x: x.type == Type.King and x.player != self.player, self.valid_moves.keys()))
         if len(xs) == 0:
+            # the king is already been captured
             return True
-        king = xs[0]
-        return xs
+        else:
+            king = xs[0]    # get the king of the opponent
+            # get a list of all valid moves the state can make
+            # check if the king's position is in that list
+        '''
+        any state that satisfies the following property:
+            - current player of the state is playing
+            - the opponent's King is in check
+        '''
 
     def __str__(self):
         res = ''
@@ -475,59 +512,85 @@ class State:
                 temp = temp + str(x) + ', '
             print(temp)
             temp = "Threatened by: "
-            for x in self.threats.get(pcs):
-                temp = temp + str(x) + ', '
+            if self.threats.get(pcs) is not None:
+                for x in self.threats.get(pcs):
+                    temp = temp + str(x) + ', '
             print(temp)
             print("\n")
         print(self.gameboard)
 
-# evaluate the value of a state
-def evaluate(state):
-    white_res = 0
-    black_res = 0
-    for pos in state.table:
-        pcs = state.table.get(pos)
-        if pcs.player is Player.White:
-            white_res = white_res + pcs.value
-        else:
-            black_res = black_res + pcs.value
-    return white_res - black_res
+    def __eq__(self, other):
+        return isinstance(other, State) and self.value == other.value
+    
+    def __lt__(self, other):
+        return isinstance(other, State) and self.value < other.value
+
+    def __gt__(self, other):
+        return isinstance(other, State) and self.value > other.value
+    
+    def __le__(self, other):
+        return isinstance(other, State) and self.value <= other.value
+
+    def __ge__(self, other):
+        return isinstance(other, state) and self.value >= other.value
+    
+    def __ne__(self, other):
+        return isinstance(other, state) and self.value != other.value
+
 
 def minimax(state, alpha, beta, isMaxPlayer, depth):
     if depth == 0 or state.is_terminal():
-        return state, evaluate(state)
-    
+        return None, state.value
     if isMaxPlayer:
-        bestVal = - float('inf')
-        for s in state.children:
-            value = minimax(s, alpha, beta, False, depth - 1)
-            bestVal = max(bestVal, value) 
-            alpha = max(alpha, bestVal)
-            if beta <= alpha:
+        bestValue = -float('inf')
+        bestState = None
+        terminated = False
+        for piece, values in state.valid_moves.items():
+            for pos in values:
+                next_state = state.get_child(piece, pos)
+                next_state.move = piece.currentPosition.get(), pos.get()
+                value = minimax(next_state, alpha, beta, False, depth - 1)
+                if bestValue < value[1]:
+                    bestState = next_state
+                    bestValue = value[1]
+                alpha = max(alpha, bestValue)
+                if beta <= alpha:
+                    terminated = True
+                    break
+            if terminated:
                 break
-        return bestVal
-
+        return bestState, bestValue
     else:
-        bestVal = float('inf')
-        for s in state.children:
-            value = minimax(s, alpha, beta, True, depth - 1)
-            bestVal = min(bestVal, value) 
-            beta = min( beta, bestVal)
-            if beta <= alpha:
+        bestValue = float('inf')
+        bestState = None
+        terminated = False
+        for piece, values in state.valid_moves.items():
+            for pos in values:
+                next_state = state.get_child(piece, pos)
+                next_state.move = piece.currentPosition.get(), pos.get()
+                value = minimax(next_state, alpha, beta, True, depth - 1)
+                # value = state, value
+                if bestValue > value[1]:
+                    bestState = next_state
+                    bestValue = value[1]
+                beta = min(beta, bestValue)
+                if beta <= alpha:
+                    terminated = True
+                    break
+            if terminated:
                 break
-        return bestVal
+        return bestState, bestValue
 
 #Implement your minimax with alpha-beta pruning algorithm here.
 def ab(gameboard):
     state = State.init_game(gameboard)
-    print(state, evaluate(state))
-    for piece in state.valid_moves:
-        temp = state.valid_moves.get(piece)
-        for pos in temp:
-            next_state = state.get_child(piece, pos)
-            print(next_state, evaluate(next_state))
-    # next_state = minimax(state, -float('inf'), float('inf'), True, 4)
-    # return state, next_state
+    alpha = - float('inf')
+    beta = float('inf')
+    next_state = minimax(state, alpha, beta, True, 3)
+    # print(state)
+    print('White played:')
+    print(next_state[0])
+    return next_state[0]
 
 ### DO NOT EDIT/REMOVE THE FUNCTION HEADER BELOW###
 # Chess Pieces: King, Queen, Knight, Bishop, Rook (First letter capitalized)
@@ -553,7 +616,21 @@ def studentAgent(gameboard):
 
 start = time.time()
 state = State(sys.argv[1])
-
-gb = state.gameboard
-ab(gb)
+# state.getInfo()
+gameboard = state.gameboard
+print(state)
+while not state.is_terminal():
+    state = ab(gameboard)   # white player make a move
+    arr = input()          # black player make a move
+    arr = arr.split(' ')
+    curr = Position(arr[0][0], int(arr[0][1:]))
+    nxt = Position(arr[1][0], int(arr[1][1:]))
+    pcs = state.table.get(curr)
+    del state.table[curr]
+    state.table[nxt] = pcs
+    print('Black played:')
+    print(state)
+    del state.gameboard[curr.get()]
+    state.gameboard[nxt.get()] = pcs.character()
+    gameboard = state.gameboard
 print(time.time() - start)

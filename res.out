@@ -4,103 +4,76 @@
 03|P|P|P|P|P|
 04|R|M|B|Q|K|
   |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01|P|P|P|P|P|
-02|M| | | | |
-03|P|P|P|P|P|
-04|R| |B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01|P|P|P|P|P|
-02| | |M| | |
-03|P|P|P|P|P|
-04|R| |B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01|P|P|P|P|P|
-02|P| | | | |
-03| |P|P|P|P|
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01|P|P|P|P|P|
-02| |P| | | |
-03|P| |P|P|P|
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01|P|P|P|P|P|
-02| | |P| | |
-03|P|P| |P|P|
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01|P|P|P|P|P|
-02| | | |P| |
-03|P|P|P| |P|
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01|P|P|P|P|P|
-02| | | | |P|
-03|P|P|P|P| |
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R| |B|Q|K|
-01|P|P|P|P|P|
-02|M| | | | |
-03|P|P|P|P|P|
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R| |B|Q|K|
-01|P|P|P|P|P|
-02| | |M| | |
-03|P|P|P|P|P|
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01| |P|P|P|P|
-02|P| | | | |
-03|P|P|P|P|P|
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
-00|R|M|B|Q|K|
-01|P| |P|P|P|
-02| |P| | | |
-03|P|P|P|P|P|
-04|R|M|B|Q|K|
-  |a|b|c|d|e|
- 0
+
+White played:
 00|R|M|B|Q|K|
 01|P|P| |P|P|
 02| | |P| | |
 03|P|P|P|P|P|
 04|R|M|B|Q|K|
   |a|b|c|d|e|
- 0
+
+Black played:
 00|R|M|B|Q|K|
-01|P|P|P| |P|
-02| | | |P| |
-03|P|P|P|P|P|
+01|P|P| |P|P|
+02| | |P| | |
+03|P| |P|P|P|
 04|R|M|B|Q|K|
   |a|b|c|d|e|
- 0
+
+White played:
 00|R|M|B|Q|K|
-01|P|P|P|P| |
+01|P|P| | |P|
+02| | |P| | |
+03|P| |P|P|P|
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
+
+Black played:
+00|R|M|B|Q|K|
+01|P|P| | |P|
+02| | |P| |P|
+03|P| |P|P| |
+04|R|M|B|Q|K|
+  |a|b|c|d|e|
+
+White played:
+00|R|M|B|Q|K|
+01|P|P| | |P|
 02| | | | |P|
-03|P|P|P|P|P|
+03|P| |P|P| |
 04|R|M|B|Q|K|
   |a|b|c|d|e|
- 0
-0.013617515563964844
+
+Black played:
+00|R|M|B|Q|K|
+01|P|P| | |P|
+02| | | | |P|
+03|P| |P|M| |
+04|R| |B|Q|K|
+  |a|b|c|d|e|
+
+White played:
+00|R| |B|Q|K|
+01|P|P| | |P|
+02| | |M| |P|
+03|P| |P|M| |
+04|R| |B|Q|K|
+  |a|b|c|d|e|
+
+Black played:
+00|R| |B|Q|K|
+01|P|P| | |P|
+02| | |M| |P|
+03|P| |P|M|Q|
+04|R| |B| |K|
+  |a|b|c|d|e|
+
+White played:
+00|R| |B|Q|K|
+01|P|P| | |P|
+02| | |M| |P|
+03|P| |P|M|Q|
+04|R| |B|K| |
+  |a|b|c|d|e|
+

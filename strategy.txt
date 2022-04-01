@@ -26,3 +26,6 @@ Flow of the algorithm:
     of the game with the current player (Black or White)
     - For each children state, generate a game configuration with the next player and the next state
     - Pass in the algorithm as normal
+
+Optimization ideas:
+    - Not implementing hash and equal in Piece

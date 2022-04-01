@@ -10,15 +10,17 @@ Position of Enemy Pieces:
 [Pawn,a3]
 [Pawn,b3]
 [Pawn,c3]
+[Pawn,d3]
 [Pawn,e3]
 Number of Own King, Queen, Bishop, Rook, Knight, Pawn (space between):1 1 1 1 1 5
 Starting Position of Pieces [Piece, Pos]:
 [King,e0]
 [Queen,d0]
 [Bishop,c0]
-[Knight,c2]
+[Knight,b0]
 [Rook,a0]
 [Pawn,a1]
+[Pawn,b1]
 [Pawn,c1]
 [Pawn,d1]
 [Pawn,e1]
