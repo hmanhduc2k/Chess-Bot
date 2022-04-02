@@ -1,0 +1,876 @@
+diff --git a/AB.py b/AB.py
+index 741cdb7..f33d20c 100755
+--- a/AB.py
++++ b/AB.py
+@@ -2,7 +2,6 @@ import os
+ import sys
+ from enum import Enum
+ from collections import deque
+-from queue import PriorityQueue
+ import time
+ import math
+ from copy import deepcopy
+@@ -30,6 +29,12 @@ def isPiece(piece):
+     except Exception as err:
+         return False
+ 
++def cvt(c, player):
++    if player is Player.Black:
++        return c.lower()
++    else:
++        return c
++
+ # Type of chess piece
+ class Type(Enum):
+     King = 'King'
+@@ -107,17 +112,17 @@ class Piece:
+ 
+     def rep(self):
+         if self.type == Type.King:
+-            return 'K'
++            return cvt('K', self.player)
+         elif self.type == Type.Rook:
+-            return 'R'
++            return cvt('R', self.player)
+         elif self.type == Type.Bishop:
+-            return 'B'
++            return cvt('B', self.player)
+         elif self.type == Type.Queen:
+-            return 'Q'
++            return cvt('Q', self.player)
+         elif self.type == Type.Knight:
+-            return 'M'
++            return cvt('M', self.player)
+         else:
+-            return 'P'
++            return cvt('P', self.player)
+ 
+ class Knight(Piece):
+     def __init__(self, position:Position, player:Player):
+@@ -355,8 +360,12 @@ class State:
+         # piece: store starting position, goal: store goal
+         self.gameboard = {}     # gameboard representation as per the question
+         self.table = {}         # hash map of position -> piece
+-        self.valid_moves = {}   # hash map of piece -> valid position it can move to (list of children state?)
+-        self.threats = {}       # hash map of piece -> other piece threatening it
++        # self.valid_moves = {}   # hash map of piece -> valid position it can move to (list of children state?)
++        self.valid_white = {}
++        self.valid_black = {}
++        self.white_threat = set([])
++        self.black_threat = set([])
++        self.children = deque([])
+         self.move = None, None
+         self.value = None
+         self.player = Player.White
+@@ -395,23 +404,21 @@ class State:
+         self.get_valid_moves()      
+     
+     def get_valid_moves(self):
++        self.valid_white.clear()
++        self.white_threat = set([])
++        self.valid_black.clear()
++        self.black_threat = set([])
+         for pos in self.table:
+             pcs = self.table.get(pos)
+             # get a list of all valid move a piece can make on the game for each piece
+             vm = pcs.valid_move(self.board, self.table)
+-            self.valid_moves[pcs] = vm
+-        # for each piece, retrieve all valid move and whether there is a piece on that position
+-        # retrieve the piece on that position, and add the current piece to the enemy list
+-        for piece in self.valid_moves:
+-            curr_list = self.valid_moves.get(piece)
+-            for pos in curr_list:
+-                pc = self.table.get(pos)
+-                if pc is not None:
+-                    if self.threats.get(pc) is None:
+-                        self.threats[pc] = []
+-                    else:
+-                        self.threats.get(pc).append(piece)
+-        self.value = self.evaluate()
++            if pcs.player == Player.White:
++                self.valid_white[pcs] = vm
++                self.white_threat.update(vm)
++            else:
++                self.valid_black[pcs] = vm
++                self.black_threat.update(vm)
++        # self.value = self.evaluate()
+     
+     def init_game(gameboard):
+         state = State()
+@@ -433,8 +440,6 @@ class State:
+     # in the process, enemy piece might be captured
+     def get_child(self, piece, next_position):
+         next_state = deepcopy(self)
+-        next_state.valid_moves.clear()      # clear list of valid move
+-        next_state.threats.clear()          # clear list of threats
+         del next_state.table[piece.currentPosition]    # clear current position of the piece
+ 
+         next_state.table[next_position] = parse_piece(next_position, piece.type, piece.player is Player.Black)
+@@ -448,38 +453,28 @@ class State:
+             next_state.player = Player.White
+         return next_state
+ 
+-    # evaluate the value of a state
++    # evaluate the value of a state relative to the white player
+     def evaluate(self):
+-        white_res = 0
+-        black_res = 0
++        # self.player refers to the player of the state
++        white_res = 0   # value of all the white pieces
++        black_res = 0   # value of all the black pieces
+         for pos in self.table:
+             pcs = self.table.get(pos)
+-            if self.threats.get(pcs) is None:
+-                val = pcs.value
+-            else:
+-                val = pcs.value ** (1/2)
++            val = pcs.value
+             
+             if pcs.player is Player.White:
++                if pcs.currentPosition in self.black_threat:
++                    val = val ** (1/3)
+                 white_res = white_res + val
+             else:
++                if pcs.currentPosition in self.white_threat:
++                    val = val ** (1/3)
+                 black_res = black_res + val
+         return white_res - black_res
+ 
+     def is_terminal(self):
+-        # state is terminal if when the player is checkmated
+-        xs = list(filter(lambda x: x.type == Type.King and x.player != self.player, self.valid_moves.keys()))
+-        if len(xs) == 0:
+-            # the king is already been captured
+-            return True
+-        else:
+-            king = xs[0]    # get the king of the opponent
+-            # get a list of all valid moves the state can make
+-            # check if the king's position is in that list
+-        '''
+-        any state that satisfies the following property:
+-            - current player of the state is playing
+-            - the opponent's King is in check
+-        '''
++        xs = list(filter(lambda x: x.type == Type.King, self.table.values()))
++        return len(xs) < 2
+ 
+     def __str__(self):
+         res = ''
+@@ -501,23 +496,6 @@ class State:
+         for j in range(self.board.cols):
+             res = res + toChar(j) + '|'
+         return res + '\n'
+-    
+-    def getInfo(self):
+-        print(str(self))
+-        for pos in self.table:
+-            pcs = self.table.get(pos)
+-            print(pcs)
+-            temp = "Can move to position or capture pieces at: "
+-            for x in self.valid_moves.get(pcs):
+-                temp = temp + str(x) + ', '
+-            print(temp)
+-            temp = "Threatened by: "
+-            if self.threats.get(pcs) is not None:
+-                for x in self.threats.get(pcs):
+-                    temp = temp + str(x) + ', '
+-            print(temp)
+-            print("\n")
+-        print(self.gameboard)
+ 
+     def __eq__(self, other):
+         return isinstance(other, State) and self.value == other.value
+@@ -540,12 +518,12 @@ class State:
+ 
+ def minimax(state, alpha, beta, isMaxPlayer, depth):
+     if depth == 0 or state.is_terminal():
+-        return None, state.value
++        return state, state.evaluate()
+     if isMaxPlayer:
+         bestValue = -float('inf')
+         bestState = None
+         terminated = False
+-        for piece, values in state.valid_moves.items():
++        for piece, values in state.valid_white.items():
+             for pos in values:
+                 next_state = state.get_child(piece, pos)
+                 next_state.move = piece.currentPosition.get(), pos.get()
+@@ -564,7 +542,7 @@ def minimax(state, alpha, beta, isMaxPlayer, depth):
+         bestValue = float('inf')
+         bestState = None
+         terminated = False
+-        for piece, values in state.valid_moves.items():
++        for piece, values in state.valid_black.items():
+             for pos in values:
+                 next_state = state.get_child(piece, pos)
+                 next_state.move = piece.currentPosition.get(), pos.get()
+@@ -586,11 +564,11 @@ def ab(gameboard):
+     state = State.init_game(gameboard)
+     alpha = - float('inf')
+     beta = float('inf')
+-    next_state = minimax(state, alpha, beta, True, 3)
+-    # print(state)
+-    print('White played:')
+-    print(next_state[0])
+-    return next_state[0]
++    next_state = minimax(state, alpha, beta, True, 2)
++    # print('White played:', next_state[0].move)
++    # print(next_state[0])
++    # return next_state[0]
++    return next_state[0].move
+ 
+ ### DO NOT EDIT/REMOVE THE FUNCTION HEADER BELOW###
+ # Chess Pieces: King, Queen, Knight, Bishop, Rook (First letter capitalized)
+@@ -614,23 +592,26 @@ def studentAgent(gameboard):
+     move = ab(gameboard)
+     return move #Format to be returned (('a', 0), ('b', 3))
+ 
+-start = time.time()
+-state = State(sys.argv[1])
+-# state.getInfo()
+-gameboard = state.gameboard
+-print(state)
+-while not state.is_terminal():
+-    state = ab(gameboard)   # white player make a move
+-    arr = input()          # black player make a move
+-    arr = arr.split(' ')
+-    curr = Position(arr[0][0], int(arr[0][1:]))
+-    nxt = Position(arr[1][0], int(arr[1][1:]))
+-    pcs = state.table.get(curr)
+-    del state.table[curr]
+-    state.table[nxt] = pcs
+-    print('Black played:')
+-    print(state)
+-    del state.gameboard[curr.get()]
+-    state.gameboard[nxt.get()] = pcs.character()
+-    gameboard = state.gameboard
+-print(time.time() - start)
++# start = time.time()
++# state = State(sys.argv[1])
++# gameboard = state.gameboard
++# print(state)
++# while not state.is_terminal():
++#     state = ab(gameboard)   # white player make a move
++#     # print(time.time() - start)
++#     try:
++#         arr = input()          # black player make a move
++#         arr = arr.split(' ')
++#         curr = Position(arr[0][0], int(arr[0][1:]))
++#         nxt = Position(arr[1][0], int(arr[1][1:]))
++#     except:
++#         continue
++#     pcs = state.table.get(curr)
++#     del state.table[curr]
++#     state.table[nxt] = pcs
++#     print('Black played:', curr, nxt)
++#     print(state)
++#     del state.gameboard[curr.get()]
++#     state.gameboard[nxt.get()] = pcs.character()
++#     gameboard = state.gameboard
++#     # break
+diff --git a/res.out b/res.out
+index c2aef94..2a6e8fe 100644
+--- a/res.out
++++ b/res.out
+@@ -1,79 +1,551 @@
+ 00|R|M|B|Q|K|
+ 01|P|P|P|P|P|
+ 02| | | | | |
+-03|P|P|P|P|P|
+-04|R|M|B|Q|K|
++03|p|p|p|p|p|
++04|r|m|b|q|k|
+   |a|b|c|d|e|
+ 
+-White played:
++White played: (('e', 1), ('e', 2))
+ 00|R|M|B|Q|K|
+-01|P|P| |P|P|
+-02| | |P| | |
+-03|P|P|P|P|P|
+-04|R|M|B|Q|K|
++01|P|P|P|P| |
++02| | | | |P|
++03|p|p|p|p|p|
++04|r|m|b|q|k|
+   |a|b|c|d|e|
+ 
+-Black played:
++White played: (('e', 1), ('e', 2))
+ 00|R|M|B|Q|K|
+-01|P|P| |P|P|
+-02| | |P| | |
+-03|P| |P|P|P|
+-04|R|M|B|Q|K|
++01|P|P|P|P| |
++02| | | | |P|
++03|p|p|p|p|p|
++04|r|m|b|q|k|
+   |a|b|c|d|e|
+ 
+-White played:
++Black played: (d,3) (e,2)
+ 00|R|M|B|Q|K|
+-01|P|P| | |P|
+-02| | |P| | |
+-03|P| |P|P|P|
+-04|R|M|B|Q|K|
++01|P|P|P|P| |
++02| | | | |p|
++03|p|p|p| |p|
++04|r|m|b|q|k|
+   |a|b|c|d|e|
+ 
+-Black played:
++White played: (('d', 1), ('d', 2))
+ 00|R|M|B|Q|K|
+-01|P|P| | |P|
+-02| | |P| |P|
+-03|P| |P|P| |
+-04|R|M|B|Q|K|
++01|P|P|P| | |
++02| | | |P|p|
++03|p|p|p| |p|
++04|r|m|b|q|k|
+   |a|b|c|d|e|
+ 
+-White played:
++Black played: (c,3) (d,2)
+ 00|R|M|B|Q|K|
+-01|P|P| | |P|
+-02| | | | |P|
+-03|P| |P|P| |
+-04|R|M|B|Q|K|
++01|P|P|P| | |
++02| | | |p|p|
++03|p|p| | |p|
++04|r|m|b|q|k|
+   |a|b|c|d|e|
+ 
+-Black played:
++White played: (('c', 1), ('d', 2))
+ 00|R|M|B|Q|K|
+-01|P|P| | |P|
+-02| | | | |P|
+-03|P| |P|M| |
+-04|R| |B|Q|K|
++01|P|P| | | |
++02| | | |P|p|
++03|p|p| | |p|
++04|r|m|b|q|k|
++  |a|b|c|d|e|
++
++Black played: (e,3) (d,2)
++00|R|M|B|Q|K|
++01|P|P| | | |
++02| | | |p|p|
++03|p|p| | | |
++04|r|m|b|q|k|
++  |a|b|c|d|e|
++
++White played: (('b', 1), ('b', 2))
++00|R|M|B|Q|K|
++01|P| | | | |
++02| |P| |p|p|
++03|p|p| | | |
++04|r|m|b|q|k|
++  |a|b|c|d|e|
++
++Black played: (a,3) (b,2)
++00|R|M|B|Q|K|
++01|P| | | | |
++02| |p| |p|p|
++03| |p| | | |
++04|r|m|b|q|k|
++  |a|b|c|d|e|
++
++White played: (('c', 0), ('b', 1))
++00|R|M| |Q|K|
++01|P|B| | | |
++02| |p| |p|p|
++03| |p| | | |
++04|r|m|b|q|k|
++  |a|b|c|d|e|
++
++Black played: (c,4) (d,3)
++00|R|M| |Q|K|
++01|P|B| | | |
++02| |p| |p|p|
++03| |p| |b| |
++04|r|m| |q|k|
++  |a|b|c|d|e|
++
++White played: (('d', 0), ('d', 2))
++00|R|M| | |K|
++01|P|B| | | |
++02| |p| |Q|p|
++03| |p| |b| |
++04|r|m| |q|k|
++  |a|b|c|d|e|
++
++Black played: (b,4) (c,2)
++00|R|M| | |K|
++01|P|B| | | |
++02| |p|m|Q|p|
++03| |p| |b| |
++04|r| | |q|k|
++  |a|b|c|d|e|
++
++White played: (('a', 1), ('b', 2))
++00|R|M| | |K|
++01| |B| | | |
++02| |P|m|Q|p|
++03| |p| |b| |
++04|r| | |q|k|
++  |a|b|c|d|e|
++
++Black played: (a,4) (c,4)
++00|R|M| | |K|
++01| |B| | | |
++02| |P|m|Q|p|
++03| |p| |b| |
++04| | |r|q|k|
++  |a|b|c|d|e|
++
++White played: (('b', 0), ('a', 2))
++00|R| | | |K|
++01| |B| | | |
++02|M|P|m|Q|p|
++03| |p| |b| |
++04| | |r|q|k|
++  |a|b|c|d|e|
++
++Black played: (b,3) (a,2)
++00|R| | | |K|
++01| |B| | | |
++02|p|P|m|Q|p|
++03| | | |b| |
++04| | |r|q|k|
++  |a|b|c|d|e|
++
++White played: (('a', 0), ('a', 2))
++00| | | | |K|
++01| |B| | | |
++02|R|P|m|Q|p|
++03| | | |b| |
++04| | |r|q|k|
++  |a|b|c|d|e|
++
++Black played: (c,4) (b,4)
++00| | | | |K|
++01| |B| | | |
++02|R|P|m|Q|p|
++03| | | |b| |
++04| |r| |q|k|
++  |a|b|c|d|e|
++
++White played: (('b', 1), ('c', 2))
++00| | | | |K|
++01| | | | | |
++02|R|P|B|Q|p|
++03| | | |b| |
++04| |r| |q|k|
++  |a|b|c|d|e|
++
++Black played: (e,2) (e,1)
++00| | | | |K|
++01| | | | |p|
++02|R|P|B|Q| |
++03| | | |b| |
++04| |r| |q|k|
+   |a|b|c|d|e|
+ 
+-White played:
+-00|R| |B|Q|K|
+-01|P|P| | |P|
+-02| | |M| |P|
+-03|P| |P|M| |
+-04|R| |B|Q|K|
++White played: (('c', 2), ('d', 3))
++00| | | | |K|
++01| | | | |p|
++02|R|P| |Q| |
++03| | | |B| |
++04| |r| |q|k|
+   |a|b|c|d|e|
+ 
+-Black played:
+-00|R| |B|Q|K|
+-01|P|P| | |P|
+-02| | |M| |P|
+-03|P| |P|M|Q|
+-04|R| |B| |K|
++Black played: (d,4) (d,3)
++00| | | | |K|
++01| | | | |p|
++02|R|P| |Q| |
++03| | | |q| |
++04| |r| | |k|
++  |a|b|c|d|e|
++
++White played: (('d', 2), ('e', 1))
++00| | | | |K|
++01| | | | |Q|
++02|R|P| | | |
++03| | | |q| |
++04| |r| | |k|
++  |a|b|c|d|e|
++
++Black played: (d,3) (e,3)
++00| | | | |K|
++01| | | | |Q|
++02|R|P| | | |
++03| | | | |q|
++04| |r| | |k|
++  |a|b|c|d|e|
++
++White played: (('e', 1), ('e', 3))
++00| | | | |K|
++01| | | | | |
++02|R|P| | | |
++03| | | | |Q|
++04| |r| | |k|
++  |a|b|c|d|e|
++
++White played: (('e', 1), ('e', 3))
++00| | | | |K|
++01| | | | | |
++02|R|P| | | |
++03| | | | |Q|
++04| |r| | |k|
++  |a|b|c|d|e|
++
++Black played: (e,4) (e,3)
++00| | | | |K|
++01| | | | | |
++02|R|P| | | |
++03| | | | |k|
++04| |r| | | |
++  |a|b|c|d|e|
++
++White played: (('a', 2), ('a', 1))
++00| | | | |K|
++01|R| | | | |
++02| |P| | | |
++03| | | | |k|
++04| |r| | | |
++  |a|b|c|d|e|
++
++Black played: (e,3) (d,2)
++00| | | | |K|
++01|R| | | | |
++02| |P| |k| |
++03| | | | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++White played: (('a', 1), ('d', 1))
++00| | | | |K|
++01| | | |R| |
++02| |P| |k| |
++03| | | | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++Black played: (d,2) (e,3)
++00| | | | |K|
++01| | | |R| |
++02| |P| | | |
++03| | | | |k|
++04| |r| | | |
++  |a|b|c|d|e|
++
++White played: (('e', 0), ('d', 0))
++00| | | |K| |
++01| | | |R| |
++02| |P| | | |
++03| | | | |k|
++04| |r| | | |
++  |a|b|c|d|e|
++
++Black played: (e,3) (e,4)
++00| | | |K| |
++01| | | |R| |
++02| |P| | | |
++03| | | | | |
++04| |r| | |k|
++  |a|b|c|d|e|
++
++White played: (('d', 1), ('e', 1))
++00| | | |K| |
++01| | | | |R|
++02| |P| | | |
++03| | | | | |
++04| |r| | |k|
++  |a|b|c|d|e|
++
++Black played: (e,4) (d,4)
++00| | | |K| |
++01| | | | |R|
++02| |P| | | |
++03| | | | | |
++04| |r| |k| |
++  |a|b|c|d|e|
++
++White played: (('e', 1), ('d', 1))
++00| | | |K| |
++01| | | |R| |
++02| |P| | | |
++03| | | | | |
++04| |r| |k| |
++  |a|b|c|d|e|
++
++Black played: (d,4) (c,4)
++00| | | |K| |
++01| | | |R| |
++02| |P| | | |
++03| | | | | |
++04| |r|k| | |
++  |a|b|c|d|e|
++
++White played: (('b', 2), ('b', 3))
++00| | | |K| |
++01| | | |R| |
++02| | | | | |
++03| |P| | | |
++04| |r|k| | |
++  |a|b|c|d|e|
++
++Black played: (c,4) (b,3)
++00| | | |K| |
++01| | | |R| |
++02| | | | | |
++03| |k| | | |
++04| |r| | | |
+   |a|b|c|d|e|
+ 
+-White played:
+-00|R| |B|Q|K|
+-01|P|P| | |P|
+-02| | |M| |P|
+-03|P| |P|M|Q|
+-04|R| |B|K| |
++White played: (('d', 1), ('b', 1))
++00| | | |K| |
++01| |R| | | |
++02| | | | | |
++03| |k| | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++Black played: (b,3) (a,4)
++00| | | |K| |
++01| |R| | | |
++02| | | | | |
++03| | | | | |
++04|k|r| | | |
++  |a|b|c|d|e|
++
++White played: (('b', 1), ('a', 1))
++00| | | |K| |
++01|R| | | | |
++02| | | | | |
++03| | | | | |
++04|k|r| | | |
++  |a|b|c|d|e|
++
++Black played: (a,4) (b,3)
++00| | | |K| |
++01|R| | | | |
++02| | | | | |
++03| |k| | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++White played: (('a', 1), ('b', 1))
++00| | | |K| |
++01| |R| | | |
++02| | | | | |
++03| |k| | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++Black played: (b,3) (c,4)
++00| | | |K| |
++01| |R| | | |
++02| | | | | |
++03| | | | | |
++04| |r|k| | |
++  |a|b|c|d|e|
++
++White played: (('b', 1), ('c', 1))
++00| | | |K| |
++01| | |R| | |
++02| | | | | |
++03| | | | | |
++04| |r|k| | |
++  |a|b|c|d|e|
++
++Black played: (c,4) (d,3)
++00| | | |K| |
++01| | |R| | |
++02| | | | | |
++03| | | |k| |
++04| |r| | | |
++  |a|b|c|d|e|
++
++White played: (('c', 1), ('d', 1))
++00| | | |K| |
++01| | | |R| |
++02| | | | | |
++03| | | |k| |
++04| |r| | | |
++  |a|b|c|d|e|
++
++Black played: (d,3) (c,2)
++00| | | |K| |
++01| | | |R| |
++02| | |k| | |
++03| | | | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++White played: (('d', 1), ('c', 1))
++00| | | |K| |
++01| | |R| | |
++02| | |k| | |
++03| | | | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++Black played: (c,2) (b,2)
++00| | | |K| |
++01| | |R| | |
++02| |k| | | |
++03| | | | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++White played: (('d', 0), ('c', 0))
++00| | |K| | |
++01| | |R| | |
++02| |k| | | |
++03| | | | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++Black played: (b,4) (a,4)
++00| | |K| | |
++01| | |R| | |
++02| |k| | | |
++03| | | | | |
++04|r| | | | |
++  |a|b|c|d|e|
++
++White played: (('c', 1), ('b', 1))
++00| | |K| | |
++01| |R| | | |
++02| |k| | | |
++03| | | | | |
++04|r| | | | |
++  |a|b|c|d|e|
++
++Black played: (b,2) (a,2)
++00| | |K| | |
++01| |R| | | |
++02|k| | | | |
++03| | | | | |
++04|r| | | | |
++  |a|b|c|d|e|
++
++White played: (('c', 0), ('b', 0))
++00| |K| | | |
++01| |R| | | |
++02|k| | | | |
++03| | | | | |
++04|r| | | | |
++  |a|b|c|d|e|
++
++Black played: (a,4) (b,4)
++00| |K| | | |
++01| |R| | | |
++02|k| | | | |
++03| | | | | |
++04| |r| | | |
++  |a|b|c|d|e|
++
++White played: (('b', 1), ('b', 4))
++00| |K| | | |
++01| | | | | |
++02|k| | | | |
++03| | | | | |
++04| |R| | | |
++  |a|b|c|d|e|
++
++Black played: (a,2) (a,3)
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03|k| | | | |
++04| |R| | | |
++  |a|b|c|d|e|
++
++White played: (('b', 4), ('d', 4))
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03|k| | | | |
++04| | | |R| |
++  |a|b|c|d|e|
++
++Black played: (a,3) (b,3)
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03| |k| | | |
++04| | | |R| |
++  |a|b|c|d|e|
++
++White played: (('d', 4), ('e', 4))
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03| |k| | | |
++04| | | | |R|
++  |a|b|c|d|e|
++
++White played: (('d', 4), ('e', 4))
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03| |k| | | |
++04| | | | |R|
++  |a|b|c|d|e|
++
++White played: (('d', 4), ('e', 4))
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03| |k| | | |
++04| | | | |R|
++  |a|b|c|d|e|
++
++White played: (('d', 4), ('e', 4))
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03| |k| | | |
++04| | | | |R|
++  |a|b|c|d|e|
++
++White played: (('d', 4), ('e', 4))
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03| |k| | | |
++04| | | | |R|
++  |a|b|c|d|e|
++
++White played: (('d', 4), ('e', 4))
++00| |K| | | |
++01| | | | | |
++02| | | | | |
++03| |k| | | |
++04| | | | |R|
+   |a|b|c|d|e|
+ 
