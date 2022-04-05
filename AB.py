@@ -596,9 +596,9 @@ def studentAgent(gameboard):
 # state = State(sys.argv[1])
 # gameboard = state.gameboard
 # print(state)
-# while not state.is_terminal():
+# while not state.is_terminal() and time.time() - start < 10:
 #     state = ab(gameboard)   # white player make a move
-#     # print(time.time() - start)
+#     print(time.time() - start)
 #     try:
 #         arr = input()          # black player make a move
 #         arr = arr.split(' ')
