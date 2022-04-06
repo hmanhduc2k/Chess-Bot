@@ -465,7 +465,7 @@ class State:
             if pcs.player is Player.White:
                 if pcs.currentPosition in self.black_threat:
                     val = val ** (1/3)
-                white_res = white_res + val
+                white_res = white_res + val 
             else:
                 if pcs.currentPosition in self.white_threat:
                     val = val ** (1/3)
@@ -497,23 +497,6 @@ class State:
             res = res + toChar(j) + '|'
         return res + '\n'
 
-    def __eq__(self, other):
-        return isinstance(other, State) and self.value == other.value
-    
-    def __lt__(self, other):
-        return isinstance(other, State) and self.value < other.value
-
-    def __gt__(self, other):
-        return isinstance(other, State) and self.value > other.value
-    
-    def __le__(self, other):
-        return isinstance(other, State) and self.value <= other.value
-
-    def __ge__(self, other):
-        return isinstance(other, state) and self.value >= other.value
-    
-    def __ne__(self, other):
-        return isinstance(other, state) and self.value != other.value
 
 
 def minimax(state, alpha, beta, isMaxPlayer, depth):
@@ -523,6 +506,7 @@ def minimax(state, alpha, beta, isMaxPlayer, depth):
         bestValue = -float('inf')
         bestState = None
         terminated = False
+        # sort by valid_white next moves
         for piece, values in state.valid_white.items():
             for pos in values:
                 next_state = state.get_child(piece, pos)
@@ -542,6 +526,7 @@ def minimax(state, alpha, beta, isMaxPlayer, depth):
         bestValue = float('inf')
         bestState = None
         terminated = False
+        # sort by valid black next moves
         for piece, values in state.valid_black.items():
             for pos in values:
                 next_state = state.get_child(piece, pos)
@@ -592,13 +577,13 @@ def studentAgent(gameboard):
     move = ab(gameboard)
     return move #Format to be returned (('a', 0), ('b', 3))
 
-# start = time.time()
-# state = State(sys.argv[1])
-# gameboard = state.gameboard
-# print(state)
+start = time.time()
+state = State(sys.argv[1])
+gameboard = state.gameboard
+print(state)
+ab(gameboard)
 # while not state.is_terminal() and time.time() - start < 10:
 #     state = ab(gameboard)   # white player make a move
-#     print(time.time() - start)
 #     try:
 #         arr = input()          # black player make a move
 #         arr = arr.split(' ')
@@ -615,3 +600,4 @@ def studentAgent(gameboard):
 #     state.gameboard[nxt.get()] = pcs.character()
 #     gameboard = state.gameboard
 #     # break
+print(time.time() - start)
