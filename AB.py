@@ -68,6 +68,9 @@ class Position:
     def __hash__(self):
         return hash(self.x) ^ hash(self.y)
 
+    def __getitem__(self, other):
+        return self
+
 class Piece:
     def __init__(self, currentPosition:Position, type:Type, player:Player):
         self.currentPosition = currentPosition
@@ -90,6 +93,9 @@ class Piece:
 
     def __hash__(self):
         return hash(self.currentPosition) ^ hash(self.type) ^ hash(self.player)
+
+    def __getitem__(self, other):
+        return self
     
     def isValidConstraint(self, x, y, board, table):
         target = table.get(Position(toChar(x), y))
@@ -132,21 +138,21 @@ class Knight(Piece):
     def valid_move(self, board, table):
         xs = []
         if super().isValidConstraint(self.x - 2, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x - 2), self.y - 1))
+            xs.append((self, Position(toChar(self.x - 2), self.y - 1)))
         if super().isValidConstraint(self.x - 1, self.y - 2, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y - 2))
+            xs.append((self, Position(toChar(self.x - 1), self.y - 2)))
         if super().isValidConstraint(self.x + 2, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x + 2), self.y - 1))
+            xs.append((self, Position(toChar(self.x + 2), self.y - 1)))
         if super().isValidConstraint(self.x + 1, self.y - 2, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y - 2))
+            xs.append((self, Position(toChar(self.x + 1), self.y - 2)))
         if super().isValidConstraint(self.x - 2, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x - 2), self.y + 1))
+            xs.append((self, Position(toChar(self.x - 2), self.y + 1)))
         if super().isValidConstraint(self.x - 1, self.y + 2, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y + 2))
+            xs.append((self, Position(toChar(self.x - 1), self.y + 2)))
         if super().isValidConstraint(self.x + 1, self.y + 2, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y + 2))
+            xs.append((self, Position(toChar(self.x + 1), self.y + 2)))
         if super().isValidConstraint(self.x + 2, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x + 2), self.y + 1))
+            xs.append((self, Position(toChar(self.x + 2), self.y + 1)))
         return xs
 
         
@@ -162,7 +168,7 @@ class Rook(Piece):
             pos = Position(toChar(temp), self.y)
             if table.get(pos) is not None:
                 if table.get(pos).player is self.other_player:    # enemy piece
-                    xs.append(pos)
+                    xs.append((self, pos))
                 break
             xs.append(pos)
             temp = temp - 1
@@ -171,7 +177,7 @@ class Rook(Piece):
             pos = Position(toChar(temp), self.y)
             if table.get(pos) is not None:
                 if table.get(pos).player is self.other_player:    # enemy piece
-                    xs.append(pos)
+                    xs.append((self, pos))
                 # break if ally or enemy piece
                 break
             xs.append(pos)
@@ -181,7 +187,7 @@ class Rook(Piece):
             pos = Position(toChar(self.x), temp)
             if table.get(pos) is not None:
                 if table.get(pos).player is self.other_player:    # enemy piece
-                    xs.append(pos)
+                    xs.append((self, pos))
                 # break if ally or enemy piece
                 break
             xs.append(pos)
@@ -191,7 +197,7 @@ class Rook(Piece):
             pos = Position(toChar(self.x), temp)
             if table.get(pos) is not None:
                 if table.get(pos).player is self.other_player:    # enemy piece
-                    xs.append(pos)
+                    xs.append((self, pos))
                 # break if ally or enemy piece
                 break
             xs.append(pos)
@@ -211,7 +217,7 @@ class Bishop(Piece):
             pos = Position(toChar(tempX), tempY)
             if table.get(pos) is not None:
                 if table.get(pos).player is self.other_player:    # enemy piece
-                    xs.append(pos)
+                    xs.append((self, pos))
                 # break if ally or enemy piece
                 break
             xs.append(pos)
@@ -223,7 +229,7 @@ class Bishop(Piece):
             pos = Position(toChar(tempX), tempY)
             if table.get(pos) is not None:
                 if table.get(pos).player is self.other_player:    # enemy piece
-                    xs.append(pos)
+                    xs.append((self, pos))
                 # break if ally or enemy piece
                 break
             xs.append(pos)
@@ -235,7 +241,7 @@ class Bishop(Piece):
             pos = Position(toChar(tempX), tempY)
             if table.get(pos) is not None:
                 if table.get(pos).player is self.other_player:    # enemy piece
-                    xs.append(pos)
+                    xs.append((self, pos))
                 # break if ally or enemy piece
                 break
             xs.append(pos)
@@ -247,7 +253,7 @@ class Bishop(Piece):
             pos = Position(toChar(tempX), tempY)
             if table.get(pos) is not None:
                 if table.get(pos).player is self.other_player:    # enemy piece
-                    xs.append(pos)
+                    xs.append((self, pos))
                 # break if ally or enemy piece
                 break
             xs.append(pos)
@@ -275,21 +281,21 @@ class King(Piece):
     def valid_move(self, board, table):
         xs = []
         if super().isValidConstraint(self.x - 1, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y - 1))
+            xs.append((self, Position(toChar(self.x - 1), self.y - 1)))
         if super().isValidConstraint(self.x - 1, self.y, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y))
+            xs.append((self, Position(toChar(self.x - 1), self.y)))
         if super().isValidConstraint(self.x - 1, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x - 1), self.y + 1))
+            xs.append((self, Position(toChar(self.x - 1), self.y + 1)))
         if super().isValidConstraint(self.x, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x), self.y - 1))
+            xs.append((self, Position(toChar(self.x), self.y - 1)))
         if super().isValidConstraint(self.x, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x), self.y + 1))
+            xs.append((self, Position(toChar(self.x), self.y + 1)))
         if super().isValidConstraint(self.x + 1, self.y - 1, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y - 1))
+            xs.append((self, Position(toChar(self.x + 1), self.y - 1)))
         if super().isValidConstraint(self.x + 1, self.y, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y))
+            xs.append((self, Position(toChar(self.x + 1), self.y)))
         if super().isValidConstraint(self.x + 1, self.y + 1, board, table):
-            xs.append(Position(toChar(self.x + 1), self.y + 1))
+            xs.append((self, Position(toChar(self.x + 1), self.y + 1)))
         return xs
 
         
@@ -302,19 +308,19 @@ class Pawn(Piece):
         xs = []
         if self.player is Player.White:
             if self.y + 1 < board.rows and table.get(Position(toChar(self.x), self.y + 1)) is None:
-                xs.append(Position(toChar(self.x), self.y + 1))
+                xs.append((self, Position(toChar(self.x), self.y + 1)))
             if super().isValidPawnCapture(self.x - 1, self.y + 1, board, table):
-                xs.append(Position(toChar(self.x - 1), self.y + 1))
+                xs.append((self, Position(toChar(self.x - 1), self.y + 1)))
             if super().isValidPawnCapture(self.x + 1, self.y + 1, board, table):
-                xs.append(Position(toChar(self.x + 1), self.y + 1))
+                xs.append((self, Position(toChar(self.x + 1), self.y + 1)))
         
         if self.player is Player.Black: 
             if self.y - 1 >= 0 and table.get(Position(toChar(self.x), self.y - 1)) is None:
-                xs.append(Position(toChar(self.x), self.y - 1))
+                xs.append((self, Position(toChar(self.x), self.y - 1)))
             if super().isValidPawnCapture(self.x - 1, self.y - 1, board, table):
-                xs.append(Position(toChar(self.x - 1), self.y - 1))
+                xs.append((self, Position(toChar(self.x - 1), self.y - 1)))
             if super().isValidPawnCapture(self.x + 1, self.y - 1, board, table):
-                xs.append(Position(toChar(self.x + 1), self.y - 1))
+                xs.append((self, Position(toChar(self.x + 1), self.y - 1)))
 
         return xs
 
@@ -361,11 +367,10 @@ class State:
         self.gameboard = {}     # gameboard representation as per the question
         self.table = {}         # hash map of position -> piece
         # self.valid_moves = {}   # hash map of piece -> valid position it can move to (list of children state?)
-        self.valid_white = {}
-        self.valid_black = {}
-        self.white_threat = set([])
-        self.black_threat = set([])
-        self.children = deque([])
+        self.valid_white = set([])
+        self.valid_black = set([])
+        # self.white_threat = set([])
+        # self.black_threat = set([])
         self.move = None, None
         self.value = None
         self.player = Player.White
@@ -404,20 +409,25 @@ class State:
         self.get_valid_moves()      
     
     def get_valid_moves(self):
-        self.valid_white.clear()
-        self.white_threat = set([])
-        self.valid_black.clear()
-        self.black_threat = set([])
+        self.valid_white = set([])
+        # self.white_threat = set([])
+        self.valid_black = set([])
+        # self.black_threat = set([])
         for pos in self.table:
             pcs = self.table.get(pos)
             # get a list of all valid move a piece can make on the game for each piece
             vm = pcs.valid_move(self.board, self.table)
             if pcs.player == Player.White:
-                self.valid_white[pcs] = vm
-                self.white_threat.update(vm)
+                self.valid_white.update(vm)
+                # self.white_threat.update(vm)
             else:
-                self.valid_black[pcs] = vm
-                self.black_threat.update(vm)
+                self.valid_black.update(vm)
+                # self.black_threat.update(vm)
+        if pcs.player == Player.White:
+            # print(self.valid_white)
+            self.valid_white = sorted(self.valid_white, key=lambda x: self.order(x[0], x[1]), reverse=True)
+        else:
+            self.valid_black = sorted(self.valid_black, key=lambda x: self.order(x[0], x[1]), reverse=True)
         # self.value = self.evaluate()
     
     def init_game(gameboard):
@@ -453,6 +463,26 @@ class State:
             next_state.player = Player.White
         return next_state
 
+    def order(self, piece, pos):
+        # piece = x[0]
+        # pos = x[1]
+        # use the order of the state?
+        print(piece, pos)
+        their_king = list(filter(lambda x: x.type == Type.King and x.player != self.player, self.table.values()))[0]
+        new_table = deepcopy(self.table)
+        if new_table.get(piece.currentPosition) is not None:
+            del new_table[piece.currentPosition]
+        target = self.table.get(pos)
+        val = 0
+        if target is not None:  # move with capture
+            val = val + target.value * 2
+        pc = parse_piece(pos, piece.type, piece.player is Player.Black)
+        new_table[pos] = pc
+        vm = pc.valid_move(self.board, new_table)
+        if (pc, their_king.currentPosition) in vm:
+            val = val + 20
+        return val
+
     # evaluate the value of a state relative to the white player
     def evaluate(self):
         # self.player refers to the player of the state
@@ -461,14 +491,9 @@ class State:
         for pos in self.table:
             pcs = self.table.get(pos)
             val = pcs.value
-            
             if pcs.player is Player.White:
-                if pcs.currentPosition in self.black_threat:
-                    val = val ** (1/3)
-                white_res = white_res + val 
+                white_res = white_res + val
             else:
-                if pcs.currentPosition in self.white_threat:
-                    val = val ** (1/3)
                 black_res = black_res + val
         return white_res - black_res
 
@@ -505,51 +530,51 @@ def minimax(state, alpha, beta, isMaxPlayer, depth):
     if isMaxPlayer:
         bestValue = -float('inf')
         bestState = None
-        terminated = False
         # sort by valid_white next moves
-        for piece, values in state.valid_white.items():
-            for pos in values:
-                next_state = state.get_child(piece, pos)
-                next_state.move = piece.currentPosition.get(), pos.get()
-                value = minimax(next_state, alpha, beta, False, depth - 1)
-                if bestValue < value[1]:
-                    bestState = next_state
-                    bestValue = value[1]
-                alpha = max(alpha, bestValue)
-                if beta <= alpha:
-                    terminated = True
-                    break
-            if terminated:
+        # state.valid_white = sorted(state.valid_white, key=lambda x: state.order(x[0], x[1]), reverse=True)
+        for move in state.valid_white:
+            piece = move[0]
+            pos = move[1]
+            next_state = state.get_child(piece, pos)
+            # next_state.order(piece, pos)
+            next_state.move = piece.currentPosition.get(), pos.get()
+            value = minimax(next_state, alpha, beta, False, depth - 1)
+            if bestValue < value[1]:
+                # print(next_state)
+                bestState = next_state
+                bestValue = value[1]
+            alpha = max(alpha, bestValue)
+            if beta <= alpha:
                 break
         return bestState, bestValue
     else:
         bestValue = float('inf')
         bestState = None
-        terminated = False
         # sort by valid black next moves
-        for piece, values in state.valid_black.items():
-            for pos in values:
-                next_state = state.get_child(piece, pos)
-                next_state.move = piece.currentPosition.get(), pos.get()
-                value = minimax(next_state, alpha, beta, True, depth - 1)
-                # value = state, value
-                if bestValue > value[1]:
-                    bestState = next_state
-                    bestValue = value[1]
-                beta = min(beta, bestValue)
-                if beta <= alpha:
-                    terminated = True
-                    break
-            if terminated:
+        # state.valid_black = sorted(state.valid_black, key=lambda x: state.order(x[0], x[1]), reverse=True)
+        for move in state.valid_black:
+            piece = move[0]
+            pos = move[1]
+            next_state = state.get_child(piece, pos)
+            # next_state.order(piece, pos)
+            next_state.move = piece.currentPosition.get(), pos.get()
+            value = minimax(next_state, alpha, beta, True, depth - 1)
+            # value = state, value
+            if bestValue > value[1]:
+                bestState = next_state
+                bestValue = value[1]
+            beta = min(beta, bestValue)
+            if beta <= alpha:
                 break
         return bestState, bestValue
 
 #Implement your minimax with alpha-beta pruning algorithm here.
 def ab(gameboard):
     state = State.init_game(gameboard)
+    state.value = state.evaluate()
     alpha = - float('inf')
     beta = float('inf')
-    next_state = minimax(state, alpha, beta, True, 2)
+    next_state = minimax(state, alpha, beta, True, 1)
     # print('White played:', next_state[0].move)
     # print(next_state[0])
     # return next_state[0]
@@ -577,11 +602,15 @@ def studentAgent(gameboard):
     move = ab(gameboard)
     return move #Format to be returned (('a', 0), ('b', 3))
 
-start = time.time()
 state = State(sys.argv[1])
 gameboard = state.gameboard
-print(state)
-ab(gameboard)
+total = 0
+for i in range(20):
+    start = time.time()
+    ab(gameboard)
+    x = time.time() - start
+    total = total + x
+print(total/20)
 # while not state.is_terminal() and time.time() - start < 10:
 #     state = ab(gameboard)   # white player make a move
 #     try:
@@ -600,4 +629,3 @@ ab(gameboard)
 #     state.gameboard[nxt.get()] = pcs.character()
 #     gameboard = state.gameboard
 #     # break
-print(time.time() - start)
