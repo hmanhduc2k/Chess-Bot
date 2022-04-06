@@ -363,11 +363,11 @@ class State:
         # self.valid_moves = {}   # hash map of piece -> valid position it can move to (list of children state?)
         self.valid_white = {}
         self.valid_black = {}
-        self.white_threat = set([])
-        self.black_threat = set([])
+        # self.white_threat = set([])
+        # self.black_threat = set([])
         self.children = deque([])
         self.move = None, None
-        self.value = None
+        self.value = 0
         self.player = Player.White
         if filepath is None:
             return
@@ -405,19 +405,21 @@ class State:
     
     def get_valid_moves(self):
         self.valid_white.clear()
-        self.white_threat = set([])
+        # self.white_threat = set([])
         self.valid_black.clear()
-        self.black_threat = set([])
+        # self.black_threat = set([])
         for pos in self.table:
             pcs = self.table.get(pos)
             # get a list of all valid move a piece can make on the game for each piece
             vm = pcs.valid_move(self.board, self.table)
             if pcs.player == Player.White:
                 self.valid_white[pcs] = vm
-                self.white_threat.update(vm)
+                self.value += pcs.value
+                # self.white_threat.update(vm)
             else:
                 self.valid_black[pcs] = vm
-                self.black_threat.update(vm)
+                self.value -= pcs.value
+                # self.black_threat.update(vm)
         # self.value = self.evaluate()
     
     def init_game(gameboard):
@@ -463,12 +465,12 @@ class State:
             val = pcs.value
             
             if pcs.player is Player.White:
-                if pcs.currentPosition in self.black_threat:
-                    val = val ** (1/3)
+                # if pcs.currentPosition in self.black_threat:
+                #     val = val ** (1/3)
                 white_res = white_res + val
             else:
-                if pcs.currentPosition in self.white_threat:
-                    val = val ** (1/3)
+                # if pcs.currentPosition in self.white_threat:
+                #     val = val ** (1/3)
                 black_res = black_res + val
         return white_res - black_res
 
@@ -497,28 +499,9 @@ class State:
             res = res + toChar(j) + '|'
         return res + '\n'
 
-    def __eq__(self, other):
-        return isinstance(other, State) and self.value == other.value
-    
-    def __lt__(self, other):
-        return isinstance(other, State) and self.value < other.value
-
-    def __gt__(self, other):
-        return isinstance(other, State) and self.value > other.value
-    
-    def __le__(self, other):
-        return isinstance(other, State) and self.value <= other.value
-
-    def __ge__(self, other):
-        return isinstance(other, state) and self.value >= other.value
-    
-    def __ne__(self, other):
-        return isinstance(other, state) and self.value != other.value
-
-
 def minimax(state, alpha, beta, isMaxPlayer, depth):
     if depth == 0 or state.is_terminal():
-        return state, state.evaluate()
+        return state, state.value
     if isMaxPlayer:
         bestValue = -float('inf')
         bestState = None
@@ -564,7 +547,7 @@ def ab(gameboard):
     state = State.init_game(gameboard)
     alpha = - float('inf')
     beta = float('inf')
-    next_state = minimax(state, alpha, beta, True, 2)
+    next_state = minimax(state, alpha, beta, True, 3)
     # print('White played:', next_state[0].move)
     # print(next_state[0])
     # return next_state[0]
@@ -593,8 +576,14 @@ def studentAgent(gameboard):
     return move #Format to be returned (('a', 0), ('b', 3))
 
 # start = time.time()
-# state = State(sys.argv[1])
-# gameboard = state.gameboard
+state = State(sys.argv[1])
+gameboard = state.gameboard
+total = 0
+for i in range(20):
+    start = time.time()
+    ab(gameboard)
+    total += time.time() - start
+print(total/20)
 # print(state)
 # while not state.is_terminal() and time.time() - start < 10:
 #     state = ab(gameboard)   # white player make a move
