@@ -522,19 +522,23 @@ def minimax(state, alpha, beta, isMaxPlayer, depth):
             alpha = max(alpha, bestValue)
             if beta <= alpha:
                 break
-            # for pos in values:
-            #     next_state = state.get_child(piece, pos)
-            #     next_state.move = piece.currentPosition.get(), pos.get()
-            #     value = minimax(next_state, alpha, beta, False, depth - 1)
-            #     if bestValue < value[1]:
-            #         bestState = next_state
-            #         bestValue = value[1]
-            #     alpha = max(alpha, bestValue)
-            #     if beta <= alpha:
-            #         terminated = True
-            #         break
-            # if terminated:
-            #     break
+        # bestValue = -float('inf')
+        # bestState = None
+        # terminated = False
+        # for piece, values in state.valid_white.items():
+        #     for pos in values:
+        #         next_state = state.get_child(piece, pos)
+        #         next_state.move = piece.currentPosition.get(), pos.get()
+        #         value = minimax(next_state, alpha, beta, False, depth - 1)
+        #         if bestValue < value[1]:
+        #             bestState = next_state
+        #             bestValue = value[1]
+        #         alpha = max(alpha, bestValue)
+        #         if beta <= alpha:
+        #             terminated = True
+        #             break
+        #     if terminated:
+        #         break
         return bestState, bestValue
     else:
         bestValue = float('inf')
@@ -552,20 +556,24 @@ def minimax(state, alpha, beta, isMaxPlayer, depth):
             beta = min(beta, bestValue)
             if beta <= alpha:
                 break
-            # for pos in values:
-            #     next_state = state.get_child(piece, pos)
-            #     next_state.move = piece.currentPosition.get(), pos.get()
-            #     value = minimax(next_state, alpha, beta, True, depth - 1)
-            #     # value = state, value
-            #     if bestValue > value[1]:
-            #         bestState = next_state
-            #         bestValue = value[1]
-            #     beta = min(beta, bestValue)
-            #     if beta <= alpha:
-            #         terminated = True
-            #         break
-            # if terminated:
-            #     break
+        # bestValue = float('inf')
+        # bestState = None
+        # terminated = False
+        # for piece, values in state.valid_black.items():
+        #     for pos in values:
+        #         next_state = state.get_child(piece, pos)
+        #         next_state.move = piece.currentPosition.get(), pos.get()
+        #         value = minimax(next_state, alpha, beta, True, depth - 1)
+        #         # value = state, value
+        #         if bestValue > value[1]:
+        #             bestState = next_state
+        #             bestValue = value[1]
+        #         beta = min(beta, bestValue)
+        #         if beta <= alpha:
+        #             terminated = True
+        #             break
+        #     if terminated:
+        #         break
         return bestState, bestValue
 
 #Implement your minimax with alpha-beta pruning algorithm here.
@@ -573,7 +581,7 @@ def ab(gameboard):
     state = State.init_game(gameboard)
     alpha = - float('inf')
     beta = float('inf')
-    next_state = minimax(state, alpha, beta, True, 2)
+    next_state = minimax(state, alpha, beta, True, 1)
     # print('White played:', next_state[0].move)
     # print(next_state[0])
     # return next_state[0]
@@ -602,15 +610,15 @@ def studentAgent(gameboard):
     return move #Format to be returned (('a', 0), ('b', 3))
 
 # start = time.time()
-state = State(sys.argv[1])
-gameboard = state.gameboard
-total = 0
-for i in range(20):
-    start = time.time()
-    print(ab(gameboard))
-    total += time.time() - start
-print(total/20)
-print(state)
+# state = State(sys.argv[1])
+# gameboard = state.gameboard
+# total = 0
+# for i in range(20):
+#     start = time.time()
+#     print(ab(gameboard))
+#     total += time.time() - start
+# print(total/20)
+# print(state)
 # while not state.is_terminal() and time.time() - start < 10:
 #     state = ab(gameboard)   # white player make a move
 #     print(time.time() - start)
