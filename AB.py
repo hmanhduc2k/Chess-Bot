@@ -412,13 +412,16 @@ class State:
             pcs = self.table.get(pos)
             # get a list of all valid move a piece can make on the game for each piece
             vm = pcs.valid_move(self.board, self.table)
-            if pcs.player == Player.White:
-                self.valid_white[pcs] = vm
+            if pcs.player == Player.White and self.player == Player.White:
+                for x in vm:
+                    self.valid_white[(deepcopy(pcs), x)] = 0
+                # self.valid_white[pcs] = vm
                 self.white_threat.update(vm)
-            else:
-                self.valid_black[pcs] = vm
+            elif pcs.player == Player.Black and self.player == Player.Black:
+                for x in vm:
+                    self.valid_black[(deepcopy(pcs), x)] = 0
+                # self.valid_black[pcs] = vm
                 self.black_threat.update(vm)
-        # self.value = self.evaluate()
     
     def init_game(gameboard):
         state = State()
@@ -446,11 +449,11 @@ class State:
         next_state.move = piece.currentPosition.get(), next_position.get()
         del next_state.gameboard[piece.currentPosition.get()]
         next_state.gameboard[next_position.get()] = piece.character()
-        next_state.get_valid_moves()
         if self.player is Player.White:
             next_state.player = Player.Black
         else:
             next_state.player = Player.White
+        next_state.get_valid_moves()
         return next_state
 
     # evaluate the value of a state relative to the white player
@@ -471,6 +474,9 @@ class State:
                     val = val ** (1/3)
                 black_res = black_res + val
         return white_res - black_res
+
+    def is_check(self):
+        our_king = list(filter(lambda x: x.type == Type.King, self.table.values()))
 
     def is_terminal(self):
         xs = list(filter(lambda x: x.type == Type.King, self.table.values()))
@@ -497,24 +503,6 @@ class State:
             res = res + toChar(j) + '|'
         return res + '\n'
 
-    def __eq__(self, other):
-        return isinstance(other, State) and self.value == other.value
-    
-    def __lt__(self, other):
-        return isinstance(other, State) and self.value < other.value
-
-    def __gt__(self, other):
-        return isinstance(other, State) and self.value > other.value
-    
-    def __le__(self, other):
-        return isinstance(other, State) and self.value <= other.value
-
-    def __ge__(self, other):
-        return isinstance(other, state) and self.value >= other.value
-    
-    def __ne__(self, other):
-        return isinstance(other, state) and self.value != other.value
-
 
 def minimax(state, alpha, beta, isMaxPlayer, depth):
     if depth == 0 or state.is_terminal():
@@ -522,41 +510,62 @@ def minimax(state, alpha, beta, isMaxPlayer, depth):
     if isMaxPlayer:
         bestValue = -float('inf')
         bestState = None
-        terminated = False
-        for piece, values in state.valid_white.items():
-            for pos in values:
-                next_state = state.get_child(piece, pos)
-                next_state.move = piece.currentPosition.get(), pos.get()
-                value = minimax(next_state, alpha, beta, False, depth - 1)
-                if bestValue < value[1]:
-                    bestState = next_state
-                    bestValue = value[1]
-                alpha = max(alpha, bestValue)
-                if beta <= alpha:
-                    terminated = True
-                    break
-            if terminated:
+        for move in state.valid_white.keys():
+            piece = move[0]
+            pos = move[1]
+            next_state = state.get_child(piece, pos)
+            next_state.move = piece.currentPosition.get(), pos.get()
+            value = minimax(next_state, alpha, beta, False, depth - 1)
+            if bestValue < value[1]:
+                bestState = next_state
+                bestValue = value[1]
+            alpha = max(alpha, bestValue)
+            if beta <= alpha:
                 break
+            # for pos in values:
+            #     next_state = state.get_child(piece, pos)
+            #     next_state.move = piece.currentPosition.get(), pos.get()
+            #     value = minimax(next_state, alpha, beta, False, depth - 1)
+            #     if bestValue < value[1]:
+            #         bestState = next_state
+            #         bestValue = value[1]
+            #     alpha = max(alpha, bestValue)
+            #     if beta <= alpha:
+            #         terminated = True
+            #         break
+            # if terminated:
+            #     break
         return bestState, bestValue
     else:
         bestValue = float('inf')
         bestState = None
-        terminated = False
-        for piece, values in state.valid_black.items():
-            for pos in values:
-                next_state = state.get_child(piece, pos)
-                next_state.move = piece.currentPosition.get(), pos.get()
-                value = minimax(next_state, alpha, beta, True, depth - 1)
-                # value = state, value
-                if bestValue > value[1]:
-                    bestState = next_state
-                    bestValue = value[1]
-                beta = min(beta, bestValue)
-                if beta <= alpha:
-                    terminated = True
-                    break
-            if terminated:
+        for move in state.valid_black.keys():
+            piece = move[0]
+            pos = move[1]
+            next_state = state.get_child(piece, pos)
+            next_state.move = piece.currentPosition.get(), pos.get()
+            value = minimax(next_state, alpha, beta, True, depth - 1)
+            # value = state, value
+            if bestValue > value[1]:
+                bestState = next_state
+                bestValue = value[1]
+            beta = min(beta, bestValue)
+            if beta <= alpha:
                 break
+            # for pos in values:
+            #     next_state = state.get_child(piece, pos)
+            #     next_state.move = piece.currentPosition.get(), pos.get()
+            #     value = minimax(next_state, alpha, beta, True, depth - 1)
+            #     # value = state, value
+            #     if bestValue > value[1]:
+            #         bestState = next_state
+            #         bestValue = value[1]
+            #     beta = min(beta, bestValue)
+            #     if beta <= alpha:
+            #         terminated = True
+            #         break
+            # if terminated:
+            #     break
         return bestState, bestValue
 
 #Implement your minimax with alpha-beta pruning algorithm here.
@@ -593,9 +602,15 @@ def studentAgent(gameboard):
     return move #Format to be returned (('a', 0), ('b', 3))
 
 # start = time.time()
-# state = State(sys.argv[1])
-# gameboard = state.gameboard
-# print(state)
+state = State(sys.argv[1])
+gameboard = state.gameboard
+total = 0
+for i in range(20):
+    start = time.time()
+    print(ab(gameboard))
+    total += time.time() - start
+print(total/20)
+print(state)
 # while not state.is_terminal() and time.time() - start < 10:
 #     state = ab(gameboard)   # white player make a move
 #     print(time.time() - start)
